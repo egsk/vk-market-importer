@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Шаг1: Авторизация{% endblock %}
+
+{% block html_class %}signin{% endblock %}
+{% block body_class %}signin text-center{% endblock %}
+
+{% block body %}
+    <div class="vk-blue">
+        <h1>Шаг 1: Авторизация</h1>
+        <h5>Для продолжения необходимо авторизоваться во ВКонтакте</h5>
+        <a href="{{ url }}" class="mt-3 vk-auth-btn">Авторизация</a>
+    </div>
+
+{% endblock %}

@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -43,6 +45,16 @@ class User implements UserInterface
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $vkAccessToken;
+
+    /**
+     * @ORM\OneToMany(targetEntity=ImportTarget::class, mappedBy="user", orphanRemoval=true)
+     */
+    private $importTargets;
+
+    public function __construct()
+    {
+        $this->importTargets = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -137,6 +149,37 @@ class User implements UserInterface
     public function setVkAccessToken(?string $vkAccessToken): self
     {
         $this->vkAccessToken = $vkAccessToken;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ImportTarget[]
+     */
+    public function getImportTargets(): Collection
+    {
+        return $this->importTargets;
+    }
+
+    public function addImportTarget(ImportTarget $importTarget): self
+    {
+        if (!$this->importTargets->contains($importTarget)) {
+            $this->importTargets[] = $importTarget;
+            $importTarget->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeImportTarget(ImportTarget $importTarget): self
+    {
+        if ($this->importTargets->contains($importTarget)) {
+            $this->importTargets->removeElement($importTarget);
+            // set the owning side to null (unless already changed)
+            if ($importTarget->getUser() === $this) {
+                $importTarget->setUser(null);
+            }
+        }
 
         return $this;
     }

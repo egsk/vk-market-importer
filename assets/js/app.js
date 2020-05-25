@@ -7,3 +7,12 @@
 
 // any CSS you import will output into a single css file (app.css in this case)
 import '../css/app.scss';
+
+import 'jquery'
+import 'popper.js'
+import 'bootstrap'
+import 'bootstrap-select'
+import 'snackbarjs'
+
+import './components/flash'
+import './components/home'

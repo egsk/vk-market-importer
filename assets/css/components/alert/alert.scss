@@ -1,0 +1,19 @@
+.alert-fixed-message {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  min-width: 250px;
+  display: none;
+  &__body {
+    position: relative;
+    padding: 20px;
+  }
+  &__close {
+    position: absolute;
+    right: 10px;
+    top: 15px;
+    display: block;
+    cursor: pointer;
+    line-height: 0;
+  }
+}

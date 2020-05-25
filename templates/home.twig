@@ -23,48 +23,37 @@
                     <div class="col-md-4 d-flex align-items-stretch">
                         <div class="card mb-4 box-shadow">
                             <div class="card-body">
-                                <h4 class="card-title">Новый экспорт</h4>
+                                <h5 class="card-title">Добавить сообщество</h5>
                                 <p class="card-text text-muted">Авторизуйтесь во ВКонтакте и настройте передачу данных о товарах в ваше сообщество</p>
-                                <a href="{{ path('step_one') }}" class="card-link">Перейти к созданию</a>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between">
+                                <small><a href="{{ path('step_one') }}" class="card-link">Перейти к созданию</a></small>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-md-4 d-flex align-items-stretch">
-                        <div class="card mb-4 box-shadow">
-                            <div class="card-body">
-                                <h5 class="card-title">Card title</h5>
-                                <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
-                                <p class="card-text">Some quick example text to build on the card title and make up the
-                                    bulk of the card's content.</p>
-                                <p class="card-text">Some quick example text to build on the card title and make up the
-                                    bulk of the card's content.</p>
-                                <a href="#" class="card-link">Card link</a>
-                                <a href="#" class="card-link">Another link</a>
+                    {% for importTarget in importTargets %}
+                        <div class="col-md-4 d-flex align-items-stretch">
+                            <div class="card mb-4 box-shadow w-100">
+                                <div class="card-body">
+                                    <h5 class="card-title d-flex justify-content-between mb-3">{{ importTarget.groupName }} <img
+                                                src="{{ importTarget.groupPhoto }}" alt=""></h5>
+                                    <h6 class="card-subtitle mb-2 text-muted"><a target="_blank" href="https://vk.com/club{{ importTarget.groupId }}">https://vk.com/club{{ importTarget.groupId }}</a></h6>
+                                    <p class="card-text text-muted">Не добавлен ни один источник данных</p>
+                                </div>
+                                <div class="card-footer d-flex justify-content-between">
+                                    <small><a href="#" class="card-link">Добавить</a></small>
+                                    <small><a href="#" class="card-link text-danger">Удалить</a></small>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    {% endfor %}
+
                 </div>
             </div>
         </div>
 
     </main>
 
-{% endblock %}
-
-{% block custom_js %}
-<script>
-    var el = document.getElementById('dashboard-helper');
-    if (+localStorage.getItem('isDashboardClosed') === 1) {
-        el.style.display = 'none';
-    } else {
-        var closeBtn = document.getElementById('close-dashboard-helper');
-        closeBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            jQuery(el).slideUp();
-            localStorage.setItem('isDashboardClosed', '1');
-        })
-    }
-</script>
 {% endblock %}
 

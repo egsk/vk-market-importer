@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block body %}
-    <main role="main">
+    <main role="main" class="bg-light">
         <section class="jumbotron text-center" id="dashboard-helper">
             <div class="container">
                 <h1 class="jumbotron-heading">Экспорт товаров в сообщество ВК</h1>
@@ -17,14 +17,15 @@
                 </p>
             </div>
         </section>
-        <div class="album py-5 bg-light">
+        <div class="album py-5">
             <div class="container">
                 <div class="row">
                     <div class="col-md-4 d-flex align-items-stretch">
                         <div class="card mb-4 box-shadow">
                             <div class="card-body">
                                 <h5 class="card-title">Добавить сообщество</h5>
-                                <p class="card-text text-muted">Авторизуйтесь во ВКонтакте и настройте передачу данных о товарах в ваше сообщество</p>
+                                <p class="card-text text-muted">Авторизуйтесь во ВКонтакте и настройте передачу данных о
+                                    товарах в ваше сообщество</p>
                             </div>
                             <div class="card-footer d-flex justify-content-between">
                                 <small><a href="{{ path('step_one') }}" class="card-link">Перейти к созданию</a></small>
@@ -33,26 +34,38 @@
                     </div>
 
                     {% for importTarget in importTargets %}
-                        <div class="col-md-4 d-flex align-items-stretch">
+                        <div data-id="{{ importTarget.id }}"
+                             class="col-md-4 d-flex align-items-stretch import-target-card">
                             <div class="card mb-4 box-shadow w-100">
                                 <div class="card-body">
-                                    <h5 class="card-title d-flex justify-content-between mb-3">{{ importTarget.groupName }} <img
+                                    <h5 class="card-title d-flex justify-content-between mb-3">{{ importTarget.groupName }}
+                                        <img
                                                 src="{{ importTarget.groupPhoto }}" alt=""></h5>
-                                    <h6 class="card-subtitle mb-2 text-muted"><a target="_blank" href="https://vk.com/club{{ importTarget.groupId }}">https://vk.com/club{{ importTarget.groupId }}</a></h6>
+                                    <h6 class="card-subtitle mb-2 text-muted"><a target="_blank"
+                                                                                 href="https://vk.com/club{{ importTarget.groupId }}">https://vk.com/club{{ importTarget.groupId }}</a>
+                                    </h6>
                                     <p class="card-text text-muted">Не добавлен ни один источник данных</p>
                                 </div>
                                 <div class="card-footer d-flex justify-content-between">
-                                    <small><a href="#" class="card-link">Добавить</a></small>
-                                    <small><a href="#" class="card-link text-danger">Удалить</a></small>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
+                                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <small>Добавить источник данных</small>
+                                        </button>
+                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                            <small><a class="dropdown-item" href="#">Ссылка на csv-файл</a></small>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-sm btn-danger delete" type="button">
+                                        <small>Удалить</small>
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     {% endfor %}
-
                 </div>
             </div>
         </div>
-
     </main>
 
 {% endblock %}

@@ -1,6 +1,8 @@
 @import "~bootstrap/scss/bootstrap";
 @import "~bootstrap-select/sass/bootstrap-select";
 
+@import "general.scss";
+
 @import "components/signin/signin.scss";
 @import "components/dashboard/dashboard.scss";
 @import "components/create/step-one.scss";

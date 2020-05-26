@@ -112,7 +112,7 @@ class MainController extends AbstractController
             $importTarget->setUser($user);
             $entityManager->persist($importTarget);
             $entityManager->flush();
-            $this->addFlash('success', 'Группа успешно добавлена! Теперь вы можете прикрепить источник данных к группе');
+            $this->addFlash('success', 'Группа успешно добавлена! <br> Теперь вы можете прикрепить источник данных к группе');
 
             return $this->redirectToRoute('home');
         }

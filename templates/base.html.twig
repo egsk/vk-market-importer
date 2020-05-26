@@ -15,7 +15,7 @@
         <div class="alert-fixed-message alert-{{ label }}">
             <div class="alert-fixed-message__body">
                 <span class="alert-fixed-message__close">&times;</span>
-                {{ message }}
+                {{ message|raw }}
             </div>
         </div>
     {% endfor %}

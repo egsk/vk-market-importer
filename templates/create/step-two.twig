@@ -1,10 +1,13 @@
 {% extends 'base.html.twig' %}
-
+{% block html_class %}fullpage-form-holder{% endblock %}
+{% block body_class %}fullpage-form-holder{% endblock %}
 {% block title %}Выбор группы{% endblock %}
 
 
 
 {% block body %}
+    <div class="p-5 box-shadow bg-white">
+        <h3 class="text-center mb-5">Добавление сообщества</h3>
     {{ form(form) }}
-
+    </div>
 {% endblock %}

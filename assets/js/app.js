@@ -12,7 +12,6 @@ import 'jquery'
 import 'popper.js'
 import 'bootstrap'
 import 'bootstrap-select'
-import 'snackbarjs'
 
 import './components/flash'
 import './components/home'

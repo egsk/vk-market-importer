@@ -1,3 +1,5 @@
+import controller from '../../controllers/importTargetController';
+
 (function () {
     const el = document.getElementById('dashboard-helper');
     if (!el) {
@@ -13,5 +15,14 @@
             localStorage.setItem('isDashboardClosed', '1');
         })
     }
+
+    $('.import-target-card').each(function () {
+        const el = $(this);
+        el.find('.delete').on('click', function () {
+            controller.deleteEntity(el.data('id')).then(() => {
+                el.remove();
+            })
+        })
+    })
 }())
 

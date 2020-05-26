@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\CsvLinkDataSourceRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -111,6 +113,16 @@ class CsvLinkDataSource
      * @ORM\Column(type="string", length=255)
      */
     private $url;
+
+    /**
+     * @ORM\OneToMany(targetEntity=CsvLinkDataSourceVkProduct::class, mappedBy="dataSource", orphanRemoval=true)
+     */
+    private $vkProducts;
+
+    public function __construct()
+    {
+        $this->vkProducts = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -317,6 +329,37 @@ class CsvLinkDataSource
     public function setUrl(string $url): self
     {
         $this->url = $url;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|CsvLinkDataSourceVkProduct[]
+     */
+    public function getVkProducts(): Collection
+    {
+        return $this->vkProducts;
+    }
+
+    public function addVkProduct(CsvLinkDataSourceVkProduct $vkProduct): self
+    {
+        if (!$this->vkProducts->contains($vkProduct)) {
+            $this->vkProducts[] = $vkProduct;
+            $vkProduct->setDataSource($this);
+        }
+
+        return $this;
+    }
+
+    public function removeVkProduct(CsvLinkDataSourceVkProduct $vkProduct): self
+    {
+        if ($this->vkProducts->contains($vkProduct)) {
+            $this->vkProducts->removeElement($vkProduct);
+            // set the owning side to null (unless already changed)
+            if ($vkProduct->getDataSource() === $this) {
+                $vkProduct->setDataSource(null);
+            }
+        }
 
         return $this;
     }

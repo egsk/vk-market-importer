@@ -4,9 +4,11 @@
 namespace App\Controller;
 
 
+use App\Entity\CsvLinkDataSource;
 use App\Entity\ImportTarget;
 use App\Entity\User;
 use App\Entity\VkMarketCategory;
+use App\Form\CsvLinkDataSourceType;
 use App\Form\ImportTargetType;
 use App\Repository\ImportTargetRepository;
 use App\Service\Vk\VkManager;
@@ -15,10 +17,10 @@ use App\Service\Vk\VkOAuthProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\Cache\CacheInterface;
@@ -39,7 +41,10 @@ class MainController extends AbstractController
      */
     public function home(ImportTargetRepository $repository)
     {
-        $importTargets = $repository->findBy([], ['id' => 'desc']);
+        /**
+         * @var ImportTarget[] $importTargets
+         */
+        $importTargets = $repository->findWithDataSource($this->getUser());
 
         return $this->render('home.twig', [
             'importTargets' => $importTargets
@@ -57,7 +62,6 @@ class MainController extends AbstractController
          * @var User $user
          */
         $user = $this->getUser();
-        dump($user);
         if ($user->getVkAccessToken()) {
             return $this->redirectToRoute('step_two');
         }
@@ -120,6 +124,50 @@ class MainController extends AbstractController
         return $this->render('create/step-two.twig', [
             'form' => $form->createView(),
         ]);
+    }
+
+    /**
+     * @Route("{id}/data-source/csv-link/add", requirements={"id"="\d+"}, name="add_csv_link_data_source")
+     * @param ImportTarget $importTarget
+     * @param Request $request
+     * @param EntityManagerInterface $entityManager
+     * @return Response
+     */
+    public function addCsvLinkDataSource(ImportTarget $importTarget, Request $request, EntityManagerInterface $entityManager)
+    {
+        /**
+         * @var User $user
+         */
+        $user = $this->getUser();
+        $dataSource = new CsvLinkDataSource();
+        $dataSource->setUser($user);
+        $dataSource->setImportTarget($importTarget);
+        $form = $this->createForm(CsvLinkDataSourceType::class, $dataSource);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($dataSource);
+            $entityManager->flush();
+        }
+
+        return $this->render('create/csv-link-data-source-form.twig', [
+            'form' => $form->createView()
+        ]);
+    }
+
+    /**
+     * @Route("/data-source/csv-link/validate/{id\d+}", requirements={"id"="\d+"}, name="add_csv_link_data_source")
+     * @param CsvLinkDataSource $dataSource
+     */
+    public function validateCsvLinkDataSource(CsvLinkDataSource $dataSource)
+    {
+        /**
+         * @var User $user
+         */
+        $user = $this->getUser();
+        if (!$this->isGranted('ROLE_SUPER_ADMIN') && $dataSource->getUser() !== $user) {
+            throw new AccessDeniedHttpException();
+        }
+        //@TODO if ($dataSource->getValidated())
     }
 
     /**

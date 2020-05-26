@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\ImportTarget;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -17,6 +18,23 @@ class ImportTargetRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, ImportTarget::class);
+    }
+
+    public function findWithDataSource(?User $user = null)
+    {
+        $queryBuilder = $this->createQueryBuilder('it')
+            ->leftJoin('it.csvLinkDataSources', 'clds')
+            ->orderBy('it.id', 'DESC');
+
+        if ($user) {
+            $queryBuilder
+                ->andWhere('it.user = :user')
+                ->setParameter('user', $user);
+        }
+
+        return $queryBuilder
+            ->getQuery()
+            ->execute();
     }
 
     // /**

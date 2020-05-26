@@ -1,9 +1,17 @@
 main {
   min-height: 100vh;
 }
+.fas {
+  line-height: 18px;
+}
 html.fullpage-form-holder,
 body.fullpage-form-holder {
-  height: 100%;
+  min-height: 100%;
+}
+
+label.required::after {
+  content:" *";
+  color: $danger;
 }
 
 body.fullpage-form-holder {

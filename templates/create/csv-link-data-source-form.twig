@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+{% block html_class %}fullpage-form-holder{% endblock %}
+{% block body_class %}fullpage-form-holder{% endblock %}
+{% block title %}Новый источник данных{% endblock %}
+
+
+
+{% block body %}
+    <div class="p-5 box-shadow bg-white">
+        <h3 class="text-center mb-5">Новый источник данных</h3>
+        {{ form(form) }}
+    </div>
+{% endblock %}

@@ -28,7 +28,8 @@
                                     товарах в ваше сообщество</p>
                             </div>
                             <div class="card-footer d-flex justify-content-between">
-                                <small><a href="{{ path('step_one') }}" class="card-link">Перейти к созданию</a></small>
+                                <small><a href="{{ path('step_one') }}"
+                                          class="btn btn-sm btn-success">Добавить</a></small>
                             </div>
                         </div>
                     </div>
@@ -39,12 +40,23 @@
                             <div class="card mb-4 box-shadow w-100">
                                 <div class="card-body">
                                     <h5 class="card-title d-flex justify-content-between mb-3">{{ importTarget.groupName }}
-                                        <img
-                                                src="{{ importTarget.groupPhoto }}" alt=""></h5>
-                                    <h6 class="card-subtitle mb-2 text-muted"><a target="_blank"
-                                                                                 href="https://vk.com/club{{ importTarget.groupId }}">https://vk.com/club{{ importTarget.groupId }}</a>
-                                    </h6>
-                                    <p class="card-text text-muted">Не добавлен ни один источник данных</p>
+                                        <a target="_blank"
+                                           href="https://vk.com/club{{ importTarget.groupId }}"><img
+                                                    src="{{ importTarget.groupPhoto }}" alt=""></a></h5>
+                                    {% if importTarget.csvLinkDataSources|length == 0 %}
+                                        <p class="card-text text-muted">Не добавлен ни один источник данных</p>
+                                    {% else %}
+                                        <ul class="list-group">
+                                            {% for dataSource in importTarget.csvLinkDataSources %}
+                                                {% set validation_class = dataSource.validated ? 'text-success' : 'text-muted'%}
+                                                <li class="list-group-item">
+                                                    <small class="d-flex justify-content-between"><a href="#"
+                                                        >{{ dataSource.sourceLabel }}</a><i
+                                                                class="fas fa-check {{ validation_class }}"></i></small>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% endif %}
                                 </div>
                                 <div class="card-footer d-flex justify-content-between">
                                     <div class="dropdown">
@@ -53,7 +65,9 @@
                                             <small>Добавить источник данных</small>
                                         </button>
                                         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                            <small><a class="dropdown-item" href="#">Ссылка на csv-файл</a></small>
+                                            <small><a class="dropdown-item"
+                                                      href="{{ path('add_csv_link_data_source', {'id': importTarget.id}) }}">Ссылка
+                                                    на csv-файл</a></small>
                                         </div>
                                     </div>
                                     <button class="btn btn-sm btn-danger delete" type="button">

@@ -51,9 +51,15 @@ class User implements UserInterface
      */
     private $importTargets;
 
+    /**
+     * @ORM\OneToMany(targetEntity=CsvLinkDataSource::class, mappedBy="user", orphanRemoval=true)
+     */
+    private $csvLinkDataSources;
+
     public function __construct()
     {
         $this->importTargets = new ArrayCollection();
+        $this->csvLinkDataSources = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -178,6 +184,37 @@ class User implements UserInterface
             // set the owning side to null (unless already changed)
             if ($importTarget->getUser() === $this) {
                 $importTarget->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|CsvLinkDataSource[]
+     */
+    public function getCsvLinkDataSources(): Collection
+    {
+        return $this->csvLinkDataSources;
+    }
+
+    public function addCsvLinkDataSource(CsvLinkDataSource $csvLinkDataSource): self
+    {
+        if (!$this->csvLinkDataSources->contains($csvLinkDataSource)) {
+            $this->csvLinkDataSources[] = $csvLinkDataSource;
+            $csvLinkDataSource->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCsvLinkDataSource(CsvLinkDataSource $csvLinkDataSource): self
+    {
+        if ($this->csvLinkDataSources->contains($csvLinkDataSource)) {
+            $this->csvLinkDataSources->removeElement($csvLinkDataSource);
+            // set the owning side to null (unless already changed)
+            if ($csvLinkDataSource->getUser() === $this) {
+                $csvLinkDataSource->setUser(null);
             }
         }
 

@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\ImportTargetRepository;
 use App\Service\Vk\DTO\Group;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -49,6 +51,16 @@ class ImportTarget
      * @ORM\Column(type="string", length=255)
      */
     private $groupPhoto;
+
+    /**
+     * @ORM\OneToMany(targetEntity=CsvLinkDataSource::class, mappedBy="importTarget", orphanRemoval=true)
+     */
+    private $csvLinkDataSources;
+
+    public function __construct()
+    {
+        $this->csvLinkDataSources = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -128,6 +140,37 @@ class ImportTarget
     public function setGroupPhoto(string $groupPhoto): self
     {
         $this->groupPhoto = $groupPhoto;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|CsvLinkDataSource[]
+     */
+    public function getCsvLinkDataSources(): Collection
+    {
+        return $this->csvLinkDataSources;
+    }
+
+    public function addCsvLinkDataSource(CsvLinkDataSource $csvLinkDataSource): self
+    {
+        if (!$this->csvLinkDataSources->contains($csvLinkDataSource)) {
+            $this->csvLinkDataSources[] = $csvLinkDataSource;
+            $csvLinkDataSource->setImportTarget($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCsvLinkDataSource(CsvLinkDataSource $csvLinkDataSource): self
+    {
+        if ($this->csvLinkDataSources->contains($csvLinkDataSource)) {
+            $this->csvLinkDataSources->removeElement($csvLinkDataSource);
+            // set the owning side to null (unless already changed)
+            if ($csvLinkDataSource->getImportTarget() === $this) {
+                $csvLinkDataSource->setImportTarget(null);
+            }
+        }
 
         return $this;
     }

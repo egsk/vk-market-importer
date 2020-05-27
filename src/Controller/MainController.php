@@ -11,6 +11,7 @@ use App\Entity\VkMarketCategory;
 use App\Form\CsvLinkDataSourceType;
 use App\Form\ImportTargetType;
 use App\Repository\ImportTargetRepository;
+use App\Service\Vk\CsvLinkDataSource\CsvLinkDataSourceRepresentationFactory;
 use App\Service\Vk\VkManager;
 use App\Service\Vk\VkMarketCategoryProvider;
 use App\Service\Vk\VkOAuthProvider;
@@ -155,10 +156,10 @@ class MainController extends AbstractController
     }
 
     /**
-     * @Route("/data-source/csv-link/validate/{id\d+}", requirements={"id"="\d+"}, name="add_csv_link_data_source")
+     * @Route("/data-source/csv-link/validate/{id}", requirements={"id"="\d+"}, name="validate_csv_link_data_source")
      * @param CsvLinkDataSource $dataSource
      */
-    public function validateCsvLinkDataSource(CsvLinkDataSource $dataSource)
+    public function validateCsvLinkDataSource(CsvLinkDataSource $dataSource, CsvLinkDataSourceRepresentationFactory $representationFactory)
     {
         /**
          * @var User $user

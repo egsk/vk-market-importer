@@ -26,6 +26,10 @@ class CsvLinkDataSourceRepresentationFactory
         $this->repository = $repository;
     }
 
+    /**
+     * @param CsvLinkDataSource $dataSource
+     * @return ProductRepresentation[]
+     */
     public function create(CsvLinkDataSource $dataSource)
     {
         $data = $this->httpClient->request('GET',

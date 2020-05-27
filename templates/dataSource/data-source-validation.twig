@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+{% block html_class %}fullpage-form-holder{% endblock %}
+{% block body_class %}fullpage-form-holder{% endblock %}
+{% block title %}Новый источник данных{% endblock %}
+
+
+
+{% block body %}
+    <div class="p-5 box-shadow bg-white container">
+        <h3 class="text-center mb-4">Валидация источника данных</h3>
+        <h5 class="text-center text-muted mb-5">
+            Ознакомьтесь с результатом обработки CSV-файла, загруженного по ссылке.<br>
+            {% if productRepresentations|length < productsCount %}
+                Отображена только часть товаров. Общее количество обработанных товаров: {{ productsCount }}
+            {% endif %}
+        </h5>
+        <div class="row">
+            {% for product in productRepresentations %}
+                <div
+                        class="col-md-6 d-flex align-items-stretch import-target-card">
+                    <div class="card mb-4 box-shadow w-100">
+                        {% set imgLink = product.photoUrl ?: asset('images/nophoto.jpg') %}
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <img class="card-img" src="{{ imgLink }}" alt="" style="max-height: 100px; width: auto">
+                            </div>
+                            <ul class="list-group">
+                                <li class="list-group-item small">
+                                    <span class="text-muted">Название:</span><br> {{ product.name }}
+                                </li>
+                                <li class="list-group-item small">
+                                    <span class="text-muted">Описание:</span><br> {{ product.description }}
+                                </li>
+                                <li class="list-group-item small">
+                                    <span class="text-muted">URL товара в магазине:</span><br> <a target="_blank" href="{{ product.url }}">{{ product.url }}</a>
+                                </li>
+                                <li class="list-group-item small">
+                                    <span class="text-muted">Категория:</span><br> {{ product.categoryName }}
+                                </li>
+                                <li class="list-group-item small">
+                                    <span class="text-muted">Название подборки:</span><br> {{ product.albumName }}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

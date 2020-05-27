@@ -67,7 +67,7 @@ class MainController extends AbstractController
             return $this->redirectToRoute('step_two');
         }
 
-        return $this->render('create/step-one.twig', ['url' => $authProvider->createOAuthURL()]);
+        return $this->render('vk/step-one.twig', ['url' => $authProvider->createOAuthURL()]);
     }
 
     /**
@@ -122,13 +122,13 @@ class MainController extends AbstractController
             return $this->redirectToRoute('home');
         }
 
-        return $this->render('create/step-two.twig', [
+        return $this->render('form/step-two.twig', [
             'form' => $form->createView(),
         ]);
     }
 
     /**
-     * @Route("{id}/data-source/csv-link/add", requirements={"id"="\d+"}, name="add_csv_link_data_source")
+     * @Route("/data-source/{id}/csv-link/add", requirements={"id"="\d+"}, name="add_csv_link_data_source")
      * @param ImportTarget $importTarget
      * @param Request $request
      * @param EntityManagerInterface $entityManager
@@ -140,6 +140,9 @@ class MainController extends AbstractController
          * @var User $user
          */
         $user = $this->getUser();
+        if (!$this->isGranted('ROLE_SUPER_ADMIN') && ($importTarget->getUser() !== $user)) {
+            throw new AccessDeniedHttpException();
+        }
         $dataSource = new CsvLinkDataSource();
         $dataSource->setUser($user);
         $dataSource->setImportTarget($importTarget);
@@ -148,9 +151,41 @@ class MainController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($dataSource);
             $entityManager->flush();
+
+            $this->redirectToRoute('validate_csv_link_data_source', ['id' => $dataSource->getId()]);
         }
 
-        return $this->render('create/csv-link-data-source-form.twig', [
+        return $this->render('form/csv-link-data-source.twig', [
+            'form' => $form->createView()
+        ]);
+    }
+
+    /**
+     * @Route("/data-source/csv-link/edit/{id}", requirements={"id"="\d+"}, name="edit_csv_link_data_source")
+     * @param CsvLinkDataSource $dataSource
+     * @param Request $request
+     * @param EntityManagerInterface $entityManager
+     * @return Response
+     */
+    public function editCsvLinkDataSource(CsvLinkDataSource $dataSource, Request $request, EntityManagerInterface $entityManager)
+    {
+        /**
+         * @var User $user
+         */
+        $user = $this->getUser();
+        if (!$this->isGranted('ROLE_SUPER_ADMIN') && ($dataSource->getUser() !== $user)) {
+            throw new AccessDeniedHttpException();
+        }
+        $form = $this->createForm(CsvLinkDataSourceType::class, $dataSource);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $dataSource->setValidated(false);
+            $entityManager->flush();
+
+            return $this->redirectToRoute('validate_csv_link_data_source', ['id' => $dataSource->getId()]);
+        }
+
+        return $this->render('form/csv-link-data-source.twig', [
             'form' => $form->createView()
         ]);
     }
@@ -158,6 +193,8 @@ class MainController extends AbstractController
     /**
      * @Route("/data-source/csv-link/validate/{id}", requirements={"id"="\d+"}, name="validate_csv_link_data_source")
      * @param CsvLinkDataSource $dataSource
+     * @param CsvLinkDataSourceRepresentationFactory $representationFactory
+     * @return Response
      */
     public function validateCsvLinkDataSource(CsvLinkDataSource $dataSource, CsvLinkDataSourceRepresentationFactory $representationFactory)
     {
@@ -168,7 +205,31 @@ class MainController extends AbstractController
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && $dataSource->getUser() !== $user) {
             throw new AccessDeniedHttpException();
         }
-        //@TODO if ($dataSource->getValidated())
+        try {
+            $productRepresentations = $representationFactory->create($dataSource);
+        } catch (\Exception $e) {
+            $this->addFlash('warning', 'Ошибка при попытке загрузки товаров из csv.
+                <br>
+                Пожалуйста, проверьте правильность заполнения параметров источника данных и csv файл на сервере
+                <br>
+                Когда-нибудь я сделаю подробный отчёт об ошибке, обещаю.
+            ');
+
+            return $this->redirectToRoute('edit_csv_link_data_source', ['id' => $dataSource->getId()]);
+        }
+        if (count($productRepresentations) === 0) {
+            $this->addFlash('warning', 'В csv-файле не обнаружено ни одного товара.
+            <br>
+            Пожалуйста, загрузите товары в csv. Вы сможете вернуться к валидации позднее.
+            ');
+
+            return $this->redirectToRoute('edit_csv_link_data_source', ['id' => $dataSource->getId()]);
+        }
+
+        return $this->render('dataSource/data-source-validation.twig', [
+            'productRepresentations' => array_slice($productRepresentations, 0, 4),
+            'productsCount' => count($productRepresentations)
+        ]);
     }
 
     /**

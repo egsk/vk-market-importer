@@ -48,9 +48,10 @@
                                     {% else %}
                                         <ul class="list-group">
                                             {% for dataSource in importTarget.csvLinkDataSources %}
-                                                {% set validation_class = dataSource.validated ? 'text-success' : 'text-muted'%}
+                                                {% set validation_class = dataSource.validated ? 'text-success' : 'text-muted' %}
+                                                {% set link = dataSource.validated ? '#' : path('validate_csv_link_data_source', {'id': dataSource.id}) %}
                                                 <li class="list-group-item">
-                                                    <small class="d-flex justify-content-between"><a href="#"
+                                                    <small class="d-flex justify-content-between"><a href="{{ link }}"
                                                         >{{ dataSource.sourceLabel }}</a><i
                                                                 class="fas fa-check {{ validation_class }}"></i></small>
                                                 </li>

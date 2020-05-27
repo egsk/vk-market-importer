@@ -38,6 +38,10 @@ class ProductRepresentation
      * @var string;
      */
     protected $url;
+    /**
+     * @var string
+     */
+    protected $sourceId;
 
     /**
      * @return string
@@ -187,6 +191,25 @@ class ProductRepresentation
     public function setUrl(string $url): self
     {
         $this->url = $url;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSourceId(): string
+    {
+        return $this->sourceId;
+    }
+
+    /**
+     * @param string $sourceId
+     * @return $this
+     */
+    public function setSourceId(string $sourceId): self
+    {
+        $this->sourceId = $sourceId;
 
         return $this;
     }

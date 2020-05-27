@@ -108,6 +108,7 @@ class CsvLinkDataSourceRepresentationFactory
             }
             $representation->setAlbumName($albumName);
             $representation->setUrl($row[$dataSource->getUrl()]);
+            $representation->setSourceId($row[$dataSource->getUniqueId()]);
             $result[] = $representation;
         }
 

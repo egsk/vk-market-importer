@@ -56,10 +56,16 @@ class User implements UserInterface
      */
     private $csvLinkDataSources;
 
+    /**
+     * @ORM\OneToMany(targetEntity=VkProduct::class, mappedBy="user", orphanRemoval=true)
+     */
+    private $vkProducts;
+
     public function __construct()
     {
         $this->importTargets = new ArrayCollection();
         $this->csvLinkDataSources = new ArrayCollection();
+        $this->vkProducts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -74,7 +80,7 @@ class User implements UserInterface
      */
     public function getUsername(): string
     {
-        return (string) $this->username;
+        return (string)$this->username;
     }
 
     public function setUsername(string $username): self
@@ -108,7 +114,7 @@ class User implements UserInterface
      */
     public function getPassword(): string
     {
-        return (string) $this->password;
+        return (string)$this->password;
     }
 
     public function setPassword(string $password): self
@@ -215,6 +221,37 @@ class User implements UserInterface
             // set the owning side to null (unless already changed)
             if ($csvLinkDataSource->getUser() === $this) {
                 $csvLinkDataSource->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|VkProduct[]
+     */
+    public function getVkProducts(): Collection
+    {
+        return $this->vkProducts;
+    }
+
+    public function addVkProduct(VkProduct $vkProduct): self
+    {
+        if (!$this->vkProducts->contains($vkProduct)) {
+            $this->vkProducts[] = $vkProduct;
+            $vkProduct->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeVkProduct(VkProduct $vkProduct): self
+    {
+        if ($this->vkProducts->contains($vkProduct)) {
+            $this->vkProducts->removeElement($vkProduct);
+            // set the owning side to null (unless already changed)
+            if ($vkProduct->getUser() === $this) {
+                $vkProduct->setUser(null);
             }
         }
 

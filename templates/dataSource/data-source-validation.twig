@@ -9,7 +9,7 @@
     <div class="p-5 box-shadow bg-white container">
         <h3 class="text-center mb-4">Валидация источника данных</h3>
         <h5 class="text-center text-muted mb-5">
-            Ознакомьтесь с результатом обработки источника данных.<br>
+            Ознакомьтесь с результатом обработки источника данных {{ dataSource.sourceLabel }}.<br>
             {% if productRepresentations|length < productsCount %}
                 Отображена только часть товаров. Общее количество обработанных товаров: {{ productsCount }}
             {% endif %}
@@ -29,16 +29,20 @@
                                     <span class="text-muted">Название:</span><br> {{ product.name }}
                                 </li>
                                 <li class="list-group-item small">
-                                    <span class="text-muted">Описание:</span><br> {{ product.description }}
+                                    <span class="text-muted">Цена:</span><br> {{ product.price }}
                                 </li>
                                 <li class="list-group-item small">
-                                    <span class="text-muted">URL товара в магазине:</span><br> <a target="_blank" href="{{ product.url }}">{{ product.url }}</a>
+                                    <span class="text-muted">Описание:</span><br> {{ product.description }}
                                 </li>
                                 <li class="list-group-item small">
                                     <span class="text-muted">Категория:</span><br> {{ product.categoryName }}
                                 </li>
                                 <li class="list-group-item small">
                                     <span class="text-muted">Название подборки:</span><br> {{ product.albumName }}
+                                </li>
+                                <li class="list-group-item small">
+                                    <span class="text-muted">URL товара в магазине:</span><br> <a target="_blank"
+                                                                                                  href="{{ product.url }}">{{ product.url }}</a>
                                 </li>
                                 <li class="list-group-item small">
                                     <span class="text-muted">Идентификатор товара в магазине:</span><br> {{ product.sourceId }}
@@ -48,6 +52,10 @@
                     </div>
                 </div>
             {% endfor %}
+        </div>
+        <div class="btn-group" role="group">
+            <a href="{{ path('confirm_csv_link_data_source', {'id': dataSource.id}) }}" class="btn btn-success">Подтвердить корректность данных</a>
+            <a href="{{ editLink }}" class="btn btn-warning">Редактировать источник данных</a>
         </div>
     </div>
 {% endblock %}

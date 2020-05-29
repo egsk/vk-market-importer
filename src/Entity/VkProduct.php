@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\VkProductRepository;
+use App\Service\Vk\DataSource\DataSourceInterface;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\DiscriminatorColumn;
 use Doctrine\ORM\Mapping\DiscriminatorMap;
@@ -10,6 +11,7 @@ use Doctrine\ORM\Mapping\InheritanceType;
 
 /**
  * @ORM\Entity(repositoryClass=VkProductRepository::class)
+ * @ORM\Table(name="vk_product")
  * @InheritanceType("SINGLE_TABLE")
  * @DiscriminatorColumn(name="data_source_type", type="string")
  * @DiscriminatorMap({"default"="VkProduct", "csv_data_source"="CsvLinkDataSourceVkProduct"})
@@ -69,15 +71,25 @@ class VkProduct
     protected $ownerId;
 
     /**
-     * @ORM\ManyToOne(targetEntity=VkMarketCategory::class, inversedBy="vkProducts")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    protected $vkMarketCategory;
-
-    /**
      * @ORM\Column(type="float", nullable=true)
      */
     protected $oldPrice;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="vkProducts")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $user;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $categoryId;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $photoId;
 
     public function getId(): ?int
     {
@@ -192,18 +204,6 @@ class VkProduct
         return $this;
     }
 
-    public function getVkMarketCategory(): ?VkMarketCategory
-    {
-        return $this->vkMarketCategory;
-    }
-
-    public function setVkMarketCategory(?VkMarketCategory $vkMarketCategory): self
-    {
-        $this->vkMarketCategory = $vkMarketCategory;
-
-        return $this;
-    }
-
     public function getOldPrice(): ?float
     {
         return $this->oldPrice;
@@ -213,6 +213,52 @@ class VkProduct
     {
         $this->oldPrice = $oldPrice;
 
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): self
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    public function getCategoryId(): ?int
+    {
+        return $this->categoryId;
+    }
+
+    public function setCategoryId(int $categoryId): self
+    {
+        $this->categoryId = $categoryId;
+
+        return $this;
+    }
+
+    public function getPhotoId(): ?int
+    {
+        return $this->photoId;
+    }
+
+    public function setPhotoId(int $photoId): self
+    {
+        $this->photoId = $photoId;
+
+        return $this;
+    }
+
+    public function getDataSource()
+    {
+        return null;
+    }
+
+    public function setDataSource(?DataSourceInterface $dataSource)
+    {
         return $this;
     }
 }

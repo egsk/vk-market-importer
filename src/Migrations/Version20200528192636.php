@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20200524223407 extends AbstractMigration
+final class Version20200528192636 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -22,7 +22,7 @@ final class Version20200524223407 extends AbstractMigration
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('ALTER TABLE user ADD vk_id INT DEFAULT NULL, ADD vk_access_token VARCHAR(255) DEFAULT NULL');
+        $this->addSql('ALTER TABLE vk_product ADD photo_id INT NOT NULL, DROP photo_hash');
     }
 
     public function down(Schema $schema): void
@@ -30,6 +30,6 @@ final class Version20200524223407 extends AbstractMigration
         // this down() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('ALTER TABLE user DROP vk_id, DROP vk_access_token');
+        $this->addSql('ALTER TABLE vk_product ADD photo_hash VARCHAR(32) CHARACTER SET utf8mb4 NOT NULL COLLATE `utf8mb4_unicode_ci`, DROP photo_id');
     }
 }

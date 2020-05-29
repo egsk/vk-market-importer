@@ -36,8 +36,7 @@ class ImportTargetType extends AbstractType
             ])
             ->add('submit', SubmitType::class, [
                 'label' => 'Следующий шаг'
-            ])
-        ;
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver)

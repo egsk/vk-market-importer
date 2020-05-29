@@ -50,7 +50,7 @@ class VkOAuthProvider
             'redirect_uri' => $this->appRedirectUri,
             'display' => 'popup',
             'response_type' => 'code',
-            'scope' => 'offline,groups,market'
+            'scope' => 'offline,groups,market,photos'
         ];
         $query = http_build_query($params);
 

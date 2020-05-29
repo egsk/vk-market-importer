@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\CsvLinkDataSourceVkProductRepository;
+use App\Service\Vk\DataSource\DataSourceInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -21,12 +22,12 @@ class CsvLinkDataSourceVkProduct extends VkProduct
         return $this->id;
     }
 
-    public function getDataSource(): ?CsvLinkDataSource
+    public function getDataSource(): ?DataSourceInterface
     {
         return $this->dataSource;
     }
 
-    public function setDataSource(?CsvLinkDataSource $dataSource): self
+    public function setDataSource(?DataSourceInterface $dataSource): self
     {
         $this->dataSource = $dataSource;
 

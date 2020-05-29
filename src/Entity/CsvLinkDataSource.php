@@ -3,6 +3,9 @@
 namespace App\Entity;
 
 use App\Repository\CsvLinkDataSourceRepository;
+use App\Service\Vk\Annotation\DataSource;
+use App\Service\Vk\DataSource\DataSourceInterface;
+use App\Service\Vk\RepresentationProvider\CsvLinkDataSourceRepresentationProvider;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -10,8 +13,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=CsvLinkDataSourceRepository::class)
+ * @DataSource(providerClass=CsvLinkDataSourceRepresentationProvider::class, entityClass=CsvLinkDataSourceVkProduct::class)
  */
-class CsvLinkDataSource
+class CsvLinkDataSource implements DataSourceInterface
 {
     /**
      * @ORM\Id()

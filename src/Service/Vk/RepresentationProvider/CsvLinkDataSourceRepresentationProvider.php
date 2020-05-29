@@ -1,15 +1,19 @@
 <?php
 
 
-namespace App\Service\Vk\CsvLinkDataSource;
+namespace App\Service\Vk\RepresentationProvider;
 
 
-use App\Entity\CsvLinkDataSource;
 use App\Repository\VkMarketCategoryRepository;
+use App\Service\Vk\DataSource\DataSourceInterface;
 use App\Service\Vk\DTO\ProductRepresentation;
 use GuzzleHttp\Client;
 
-class CsvLinkDataSourceRepresentationFactory
+/**
+ * Class CsvLinkDataSourceRepresentationProvider
+ * @package App\Service\Vk\RepresentationProvider
+ */
+class CsvLinkDataSourceRepresentationProvider implements ProductRepresentationProviderInterface
 {
     /**
      * @var Client
@@ -27,10 +31,10 @@ class CsvLinkDataSourceRepresentationFactory
     }
 
     /**
-     * @param CsvLinkDataSource $dataSource
+     * @param DataSourceInterface $dataSource
      * @return ProductRepresentation[]
      */
-    public function create(CsvLinkDataSource $dataSource)
+    public function create(DataSourceInterface $dataSource): array
     {
         $data = $this->httpClient->request('GET',
             $dataSource->getSourceUrl()
@@ -73,8 +77,9 @@ class CsvLinkDataSourceRepresentationFactory
                 }
             }
             $representation->setName($name);
-            $description = $row[$dataSource->getDescriptionPattern()] ?? null;
-            $description = str_replace($keys, array_values($row), $description);
+            $description = $dataSource->getDescriptionPattern() ?
+                str_replace($keys, array_values($row), $dataSource->getDescriptionPattern()) :
+                null;
             $representation->setDescription($description);
             $categoryNameField = $dataSource->getCategoryName();
             $fetchedCategory = [];

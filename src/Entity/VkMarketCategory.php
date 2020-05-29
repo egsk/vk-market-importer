@@ -28,20 +28,21 @@ class VkMarketCategory
      */
     private $importTargets;
 
-    /**
-     * @ORM\OneToMany(targetEntity=VkProduct::class, mappedBy="vkMarketCategory")
-     */
-    private $vkProducts;
-
     public function __construct()
     {
         $this->importTargets = new ArrayCollection();
-        $this->vkProducts = new ArrayCollection();
     }
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function setId(int $id): self
+    {
+        $this->id = $id;
+
+        return $this;
     }
 
     public function getName(): ?string
@@ -81,37 +82,6 @@ class VkMarketCategory
             // set the owning side to null (unless already changed)
             if ($importTarget->getVkMarketCategory() === $this) {
                 $importTarget->setVkMarketCategory(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|VkProduct[]
-     */
-    public function getVkProducts(): Collection
-    {
-        return $this->vkProducts;
-    }
-
-    public function addVkProduct(VkProduct $vkProduct): self
-    {
-        if (!$this->vkProducts->contains($vkProduct)) {
-            $this->vkProducts[] = $vkProduct;
-            $vkProduct->setVkMarketCategory($this);
-        }
-
-        return $this;
-    }
-
-    public function removeVkProduct(VkProduct $vkProduct): self
-    {
-        if ($this->vkProducts->contains($vkProduct)) {
-            $this->vkProducts->removeElement($vkProduct);
-            // set the owning side to null (unless already changed)
-            if ($vkProduct->getVkMarketCategory() === $this) {
-                $vkProduct->setVkMarketCategory(null);
             }
         }
 

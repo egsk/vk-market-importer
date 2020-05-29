@@ -4,9 +4,9 @@
 namespace App\Service\Vk;
 
 
-use App\Entity\User;
 use App\Service\Vk\DTO\Group;
 use App\Service\Vk\DTO\MarketCategory;
+use Exception;
 use Psr\Log\LoggerInterface;
 use VK\Client\VKApiClient;
 
@@ -43,7 +43,7 @@ class VkManager
                     'count' => 1000
                 ]);
             $rawGroups = $response['items'];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error($e->getMessage());
 
             return [];
@@ -74,7 +74,7 @@ class VkManager
                     'extended' => 1,
                     'count' => 1000
                 ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error($e->getMessage());
 
             return [];

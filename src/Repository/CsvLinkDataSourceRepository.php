@@ -20,7 +20,7 @@ class CsvLinkDataSourceRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return CsvLinkDataSource[] Returns an array of CsvLinkDataSource objects
+    //  * @return RepresentationProvider[] Returns an array of RepresentationProvider objects
     //  */
     /*
     public function findByExampleField($value)
@@ -37,7 +37,7 @@ class CsvLinkDataSourceRepository extends ServiceEntityRepository
     */
 
     /*
-    public function findOneBySomeField($value): ?CsvLinkDataSource
+    public function findOneBySomeField($value): ?RepresentationProvider
     {
         return $this->createQueryBuilder('c')
             ->andWhere('c.exampleField = :val')

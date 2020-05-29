@@ -32,3 +32,9 @@ services:
             - '%env(VK_APP_PRIVATE)%'
             - '%env(VK_APP_SERVICE)%'
             - '%env(VK_APP_REDIRECT_URI)%'
+    App\Service\Vk\ProductUploader:
+        arguments:
+            - '%env(VK_DEFAULT_PRODUCT_PICTURE)%'
+
+    App\Service\Vk\RepresentationProvider\CsvLinkDataSourceRepresentationProvider:
+        public: true

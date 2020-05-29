@@ -10,12 +10,14 @@ use App\Entity\User;
 use App\Entity\VkMarketCategory;
 use App\Form\CsvLinkDataSourceType;
 use App\Form\ImportTargetType;
+use App\Message\UpdateDataSource;
 use App\Repository\ImportTargetRepository;
-use App\Service\Vk\CsvLinkDataSource\CsvLinkDataSourceRepresentationFactory;
+use App\Service\Vk\RepresentationProvider\CsvLinkDataSourceRepresentationProvider;
 use App\Service\Vk\VkManager;
 use App\Service\Vk\VkMarketCategoryProvider;
 use App\Service\Vk\VkOAuthProvider;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -108,9 +110,6 @@ class MainController extends AbstractController
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             /**
-             * @var ImportTarget $importTarget ;
-             */
-            /**
              * @var User $user
              */
             $user = $this->getUser();
@@ -161,7 +160,7 @@ class MainController extends AbstractController
     }
 
     /**
-     * @Route("/data-source/csv-link/edit/{id}", requirements={"id"="\d+"}, name="edit_csv_link_data_source")
+     * @Route("/data-source/csv-link/{id}/edit", requirements={"id"="\d+"}, name="edit_csv_link_data_source")
      * @param CsvLinkDataSource $dataSource
      * @param Request $request
      * @param EntityManagerInterface $entityManager
@@ -191,12 +190,12 @@ class MainController extends AbstractController
     }
 
     /**
-     * @Route("/data-source/csv-link/validate/{id}", requirements={"id"="\d+"}, name="validate_csv_link_data_source")
+     * @Route("/data-source/csv-link/{id}/validate", requirements={"id"="\d+"}, name="validate_csv_link_data_source")
      * @param CsvLinkDataSource $dataSource
-     * @param CsvLinkDataSourceRepresentationFactory $representationFactory
+     * @param CsvLinkDataSourceRepresentationProvider $representationFactory
      * @return Response
      */
-    public function validateCsvLinkDataSource(CsvLinkDataSource $dataSource, CsvLinkDataSourceRepresentationFactory $representationFactory)
+    public function validateCsvLinkDataSource(CsvLinkDataSource $dataSource, CsvLinkDataSourceRepresentationProvider $representationFactory)
     {
         /**
          * @var User $user
@@ -207,7 +206,7 @@ class MainController extends AbstractController
         }
         try {
             $productRepresentations = $representationFactory->create($dataSource);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('warning', 'Ошибка при попытке загрузки товаров из csv.
                 <br>
                 Пожалуйста, проверьте правильность заполнения параметров источника данных и csv файл на сервере
@@ -228,9 +227,47 @@ class MainController extends AbstractController
 
         return $this->render('dataSource/data-source-validation.twig', [
             'productRepresentations' => array_slice($productRepresentations, 0, 4),
-            'productsCount' => count($productRepresentations)
+            'productsCount' => count($productRepresentations),
+            'dataSource' => $dataSource,
+            'editLink' => $this->generateUrl('edit_csv_link_data_source', ['id' => $dataSource->getId()])
         ]);
     }
+
+    /**
+     * @Route("/data-source/csv-link/{id}/confirm", requirements={"id"="\d+"}, name="confirm_csv_link_data_source")
+     * @param CsvLinkDataSource $dataSource
+     * @param EntityManagerInterface $entityManager
+     * @return RedirectResponse
+     */
+    public function confirmCsvLinkDataSource(CsvLinkDataSource $dataSource, EntityManagerInterface $entityManager)
+    {
+        /**
+         * @var User $user
+         */
+        $user = $this->getUser();
+        if (!$this->isGranted('ROLE_SUPER_ADMIN') && $dataSource->getUser() !== $user) {
+            throw new AccessDeniedHttpException();
+        }
+        $dataSource->setValidated(true);
+        $entityManager->flush();
+        $this->addFlash('success', 'Источник данных успешно подтверждён');
+
+        return $this->redirectToRoute('upload_csv_link_data_source', ['id' => $dataSource->getId()]);
+    }
+
+    /**
+     * @Route("/data-source/csv-link/{id}/upload", requirements={"id"="\d+"}, name="upload_csv_link_data_source")
+     * @param CsvLinkDataSource $dataSource
+     * @return RedirectResponse
+     */
+    public function uploadProductsFromCsvLinkDataSource(CsvLinkDataSource $dataSource)
+    {
+        $this->dispatchMessage(new UpdateDataSource($dataSource));
+        $this->addFlash('success', 'Начата загрузка товаров в фоновом режиме');
+
+        return $this->redirectToRoute('home');
+    }
+
 
     /**
      * @Route("/vk-auth", name="vk_auth")

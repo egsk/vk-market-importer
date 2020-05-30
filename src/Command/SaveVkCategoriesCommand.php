@@ -48,17 +48,17 @@ class SaveVkCategoriesCommand extends Command
         if (!$user) {
             $output->writeln("<error>Пользователь {$username} не найден.</error>");
 
-            return false;
+            return 1;
         }
         if (!$user->getVkAccessToken()) {
             $output->writeln("<error>Пользователь {$username} не авторизован в Вк.</error>");
 
-            return false;
+            return 1;
         }
         $this->categoryProvider->saveCategories($user->getVkAccessToken());
         $output->writeln("<info>Категории успешно загружены.</info>");
 
-        return true;
+        return 0;
     }
 
 }

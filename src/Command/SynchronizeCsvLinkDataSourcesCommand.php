@@ -39,5 +39,7 @@ class SynchronizeCsvLinkDataSourcesCommand extends Command
         foreach ($dataSources as $dataSource) {
             $this->bus->dispatch(new UpdateDataSource($dataSource));
         }
+
+        return 0;
     }
 }

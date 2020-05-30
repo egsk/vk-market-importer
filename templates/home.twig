@@ -49,11 +49,11 @@
                                         <ul class="list-group">
                                             {% for dataSource in importTarget.csvLinkDataSources %}
                                                 {% set validation_class = dataSource.validated ? 'text-success' : 'text-muted' %}
-                                                {% set link = dataSource.validated ? path('edit_csv_link_data_source', {'id': dataSource.id}) : path('validate_csv_link_data_source', {'id': dataSource.id}) %}
+                                                {% set link = dataSource.validated ? path('upload_csv_link_data_source', {'id': dataSource.id}) : path('validate_csv_link_data_source', {'id': dataSource.id}) %}
                                                 <li class="list-group-item">
                                                     <small class="d-flex justify-content-between"><a href="{{ link }}"
-                                                        >{{ dataSource.sourceLabel }}</a><i
-                                                                class="fas fa-check {{ validation_class }}"></i></small>
+                                                        >{{ dataSource.sourceLabel }}</a><a href="{{ path('edit_csv_link_data_source', {'id': dataSource.id}) }}"><i
+                                                                    class="fas fa-edit {{ validation_class }}"></i></a></small>
                                                 </li>
                                             {% endfor %}
                                         </ul>

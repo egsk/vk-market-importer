@@ -99,7 +99,7 @@ class ProductUploader
         $uploadedProducts = [];
         foreach ($representations as $representation) {
             $product = $this->createProductEntity($representation);
-            $photoId = $this->uploadPhoto($product->getPhotoUrl());
+            $photoId = $this->createPhoto($product->getPhotoUrl());
             $product->setPhotoId($photoId);
             $params = [
                 'name' => $product->getName(),
@@ -149,7 +149,7 @@ class ProductUploader
             $product = $this->createProductEntity($representation, $productsToUpdate[$key]);
             $params = [];
             if ($product->getPhotoUrl() !== $oldPhotoUrl) {
-                $params['main_photo_id'] = $this->uploadPhoto($product->getPhotoUrl());
+                $params['main_photo_id'] = $this->createPhoto($product->getPhotoUrl());
             }
             if ($product->getAlbumName() && $product->getAlbumName() !== $oldAlbumName) {
                 $this->createAlbumIfNotExists($product->getAlbumName());
@@ -187,12 +187,24 @@ class ProductUploader
     }
 
 
-    protected function uploadPhoto($photoUrl = null): int
+    protected function createPhoto($photoUrl = null): int
     {
         if (!$photoUrl) {
             $photoUrl = $this->defaultPhotoUrl;
         }
-        $image = fopen($photoUrl, 'r');
+        try {
+            $image = fopen($photoUrl, 'r');
+            $photo = $this->uploadImage($image);
+        } catch (\Exception $e) {
+            $image = fopen($this->defaultPhotoUrl, 'r');
+            $photo = $this->uploadImage($image);
+        }
+
+        return $photo[0]['id'];
+    }
+
+    protected function uploadImage($image)
+    {
         $uploadServer = $this->vkApiClient
             ->photos()
             ->getMarketUploadServer($this->accessToken, [
@@ -208,13 +220,12 @@ class ProductUploader
             ]
         ])->getBody()->getContents();
         $result = json_decode($result, true);
-        $photo = $this->vkApiClient
+
+        return $this->vkApiClient
             ->photos()
             ->saveMarketPhoto($this->accessToken, array_merge([
                 'group_id' => -$this->ownerId
             ], $result));
-
-        return $photo[0]['id'];
     }
 
     /**

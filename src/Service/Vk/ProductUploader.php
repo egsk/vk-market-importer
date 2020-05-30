@@ -98,37 +98,39 @@ class ProductUploader
     {
         $uploadedProducts = [];
         foreach ($representations as $representation) {
-            $product = $this->createProductEntity($representation);
-            $photoId = $this->createPhoto($product->getPhotoUrl());
-            $product->setPhotoId($photoId);
-            $params = [
-                'name' => $product->getName(),
-                'description' => $product->getDescription(),
-                'category_id' => $product->getCategoryId(),
-                'price' => $product->getPrice(),
-                'main_photo_id' => $photoId,
-                'owner_id' => $this->ownerId
-            ];
-            if ($url = $product->getUrl()) {
-                $params['url'] = $url;
-            }
-            $uploadedProductId = $this->vkApiClient
-                ->market()
-                ->add($this->accessToken, $params);
-            $product->setVkMarketId($uploadedProductId['market_item_id']);
-            $uploadedProducts[] = $product;
-            if (!$product->getAlbumName()) {
-                continue;
-            }
-            $this->createAlbumIfNotExists($product->getAlbumName());
-            $this->vkApiClient
-                ->market()
-                ->addToAlbum($this->accessToken, [
-                    'owner_id' => $this->ownerId,
-                    'item_id' => $uploadedProductId,
-                    'album_ids' => $this->getAlbums()[$product->getAlbumName()]
-                ]);
-            sleep(1);
+            try {
+                $product = $this->createProductEntity($representation);
+                $photoId = $this->createPhoto($product->getPhotoUrl());
+                $product->setPhotoId($photoId);
+                $params = [
+                    'name' => $product->getName(),
+                    'description' => $product->getDescription(),
+                    'category_id' => $product->getCategoryId(),
+                    'price' => $product->getPrice(),
+                    'main_photo_id' => $photoId,
+                    'owner_id' => $this->ownerId
+                ];
+                if ($url = $product->getUrl()) {
+                    $params['url'] = $url;
+                }
+                $uploadedProductId = $this->vkApiClient
+                    ->market()
+                    ->add($this->accessToken, $params);
+                $product->setVkMarketId($uploadedProductId['market_item_id']);
+                $uploadedProducts[] = $product;
+                if (!$product->getAlbumName()) {
+                    continue;
+                }
+                $this->createAlbumIfNotExists($product->getAlbumName());
+                $this->vkApiClient
+                    ->market()
+                    ->addToAlbum($this->accessToken, [
+                        'owner_id' => $this->ownerId,
+                        'item_id' => $uploadedProductId,
+                        'album_ids' => $this->getAlbums()[$product->getAlbumName()]
+                    ]);
+                sleep(1);
+            } catch (\Exception $e) {}
         }
 
         return $uploadedProducts;
@@ -143,44 +145,48 @@ class ProductUploader
     {
         $updatedProducts = [];
         foreach ($updatingRepresentation as $key => $representation) {
-            $product = $productsToUpdate[$key];
-            $oldPhotoUrl = $product->getPhotoUrl();
-            $oldAlbumName = $product->getAlbumName();
-            $product = $this->createProductEntity($representation, $productsToUpdate[$key]);
-            $params = [];
-            if ($product->getPhotoUrl() !== $oldPhotoUrl) {
-                $params['main_photo_id'] = $this->createPhoto($product->getPhotoUrl());
-            }
-            if ($product->getAlbumName() && $product->getAlbumName() !== $oldAlbumName) {
-                $this->createAlbumIfNotExists($product->getAlbumName());
+            try {
+                $product = $productsToUpdate[$key];
+                $oldPhotoUrl = $product->getPhotoUrl();
+                $oldAlbumName = $product->getAlbumName();
+                $product = $this->createProductEntity($representation, $productsToUpdate[$key]);
+                $params = [];
+                if ($product->getPhotoUrl() !== $oldPhotoUrl) {
+                    $params['main_photo_id'] = $this->createPhoto($product->getPhotoUrl());
+                }
+                if ($product->getAlbumName() && $product->getAlbumName() !== $oldAlbumName) {
+                    $this->createAlbumIfNotExists($product->getAlbumName());
+                    $this->vkApiClient
+                        ->market()
+                        ->removeFromAlbum($this->accessToken, [
+                            'owner_id' => $this->ownerId,
+                            'item_id' => $product->getVkMarketId(),
+                            'album_ids' => $this->getAlbums()[$oldAlbumName]
+                        ]);
+                    $this->vkApiClient
+                        ->market()
+                        ->addToAlbum($this->accessToken, [
+                            'owner_id' => $this->ownerId,
+                            'item_id' => $product->getVkMarketId(),
+                            'album_ids' => $this->getAlbums()[$product->getAlbumName()]
+                        ]);
+                }
                 $this->vkApiClient
                     ->market()
-                    ->removeFromAlbum($this->accessToken, [
+                    ->edit($this->accessToken, array_merge([
                         'owner_id' => $this->ownerId,
                         'item_id' => $product->getVkMarketId(),
-                        'album_ids' => $this->getAlbums()[$oldAlbumName]
-                    ]);
-                $this->vkApiClient
-                    ->market()
-                    ->addToAlbum($this->accessToken, [
-                        'owner_id' => $this->ownerId,
-                        'item_id' => $product->getVkMarketId(),
-                        'album_ids' => $this->getAlbums()[$product->getAlbumName()]
-                    ]);
-            }
-            $this->vkApiClient
-                ->market()
-                ->edit($this->accessToken, array_merge([
-                    'owner_id' => $this->ownerId,
-                    'item_id' => $product->getVkMarketId(),
-                    'name' => $product->getName(),
-                    'description' => $product->getDescription(),
-                    'categoryId' => $product->getCategoryId(),
-                    'price' => $product->getPrice(),
-                ], $params));
-            sleep(1);
+                        'name' => $product->getName(),
+                        'description' => $product->getDescription(),
+                        'categoryId' => $product->getCategoryId(),
+                        'price' => $product->getPrice(),
+                    ], $params));
+                sleep(1);
 
-            $updatedProducts[] = $product;
+                $updatedProducts[] = $product;
+            } catch (\Exception $e) {
+            }
+
         }
 
         return $updatedProducts;

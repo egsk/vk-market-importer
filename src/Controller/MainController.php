@@ -151,7 +151,7 @@ class MainController extends AbstractController
             $entityManager->persist($dataSource);
             $entityManager->flush();
 
-            $this->redirectToRoute('validate_csv_link_data_source', ['id' => $dataSource->getId()]);
+            return $this->redirectToRoute('validate_csv_link_data_source', ['id' => $dataSource->getId()]);
         }
 
         return $this->render('form/csv-link-data-source.twig', [

@@ -63,6 +63,7 @@ class CsvLinkDataSource implements DataSourceInterface
 
     /**
      * @ORM\Column(type="text")
+     * @Assert\NotBlank()
      */
     private $descriptionPattern;
 
@@ -115,6 +116,7 @@ class CsvLinkDataSource implements DataSourceInterface
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank()
      */
     private $url;
 

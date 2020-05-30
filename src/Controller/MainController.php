@@ -214,7 +214,7 @@ class MainController extends AbstractController
                 Когда-нибудь я сделаю подробный отчёт об ошибке, обещаю.
             ');
 
-            return $this->redirectToRoute('edit_csv_link_data_source', ['id' => $dataSource->getId()]);
+            return $this->redirectToRoute('home');
         }
         if (count($productRepresentations) === 0) {
             $this->addFlash('warning', 'В csv-файле не обнаружено ни одного товара.
@@ -222,7 +222,7 @@ class MainController extends AbstractController
             Пожалуйста, загрузите товары в csv. Вы сможете вернуться к валидации позднее.
             ');
 
-            return $this->redirectToRoute('edit_csv_link_data_source', ['id' => $dataSource->getId()]);
+            return $this->redirectToRoute('home');
         }
 
         return $this->render('dataSource/data-source-validation.twig', [

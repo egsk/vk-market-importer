@@ -39,11 +39,9 @@ class CsvLinkDataSourceType extends AbstractType
             ])
             ->add('url', TextType::class, [
                 'label' => 'Поле, содержащее ссылку на товар',
-                'required' => false
             ])
             ->add('descriptionPattern', TextareaType::class, [
                 'label' => 'Шаблон генерации описания товара, i.e. "%description_column% Ссылка: %url_column%"',
-                'required' => false
             ])
             ->add('categoryName', TextType::class, [
                 'label' => 'Поле, содержащее название категории в вк. При отсутствии будет использована родительская',

@@ -30,6 +30,10 @@ class CsvLinkDataSourceType extends AbstractType
             ->add('uniqueId', TextType::class, [
                 'label' => 'Поле, содержащее уникальный идентификатор товара'
             ])
+            ->add('status', TextType::class, [
+                'label' => 'После, содержащее статус товара (в случае отсутствия будет считаться, что всегда есть)',
+                'required' => false
+            ])
             ->add('name', TextType::class, [
                 'label' => 'Поле, содержащее имя товара'
             ])

@@ -23,6 +23,10 @@ class ProductRepresentation
      */
     protected $categoryId = 0;
     /**
+     * @var bool
+     */
+    protected $status = true;
+    /**
      * @var float
      */
     protected $price;
@@ -210,6 +214,25 @@ class ProductRepresentation
     public function setSourceId(string $sourceId): self
     {
         $this->sourceId = $sourceId;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getStatus(): bool
+    {
+        return $this->status;
+    }
+
+    /**
+     * @param bool $status
+     * @return $this
+     */
+    public function setStatus(bool $status): self
+    {
+        $this->status = $status;
 
         return $this;
     }

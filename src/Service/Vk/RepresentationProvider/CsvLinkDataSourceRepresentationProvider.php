@@ -8,6 +8,7 @@ use App\Repository\VkMarketCategoryRepository;
 use App\Service\Vk\DataSource\DataSourceInterface;
 use App\Service\Vk\DTO\ProductRepresentation;
 use GuzzleHttp\Client;
+use Html2Text\Html2Text;
 
 /**
  * Class CsvLinkDataSourceRepresentationProvider
@@ -79,7 +80,8 @@ class CsvLinkDataSourceRepresentationProvider implements ProductRepresentationPr
             $representation->setName($name);
             $description = $dataSource->getDescriptionPattern() ?
                 str_replace($keys, array_values($row), $dataSource->getDescriptionPattern()) :
-                null;
+                '';
+            $description = (new Html2Text($description))->getText();
             $representation->setDescription($description);
             $categoryNameField = $dataSource->getCategoryName();
             $fetchedCategory = [];
@@ -104,12 +106,15 @@ class CsvLinkDataSourceRepresentationProvider implements ProductRepresentationPr
             $representation->setPrice($row[$dataSource->getPrice()]);
             $representation->setPhotoUrl($row[$dataSource->getPhotoUrl()]);
             $albumName = $row[$dataSource->getAlbumName()] ?? null;
-            if ($dataSource->getAlbumHandlePattern()) {
+            if ($albumHandlePattern = $dataSource->getAlbumHandlePattern()) {
                 $matches = [];
-                preg_match_all($dataSource->getAlbumHandlePattern() ?: '', $albumName, $matches);
+                preg_match_all($albumHandlePattern ?: '', $albumName, $matches);
                 if (!empty($matches[0])) {
                     $albumName = $matches[0][0];
                 }
+            }
+            if ($status = $dataSource->getStatus()) {
+                $representation->setStatus((bool)$row[$dataSource->getStatus()]);
             }
             $representation->setAlbumName($albumName);
             $representation->setUrl($row[$dataSource->getUrl()]);

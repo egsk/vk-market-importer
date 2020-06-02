@@ -29,6 +29,9 @@
                                     <span class="text-muted">Название:</span><br> {{ product.name }}
                                 </li>
                                 <li class="list-group-item small">
+                                    <span class="text-muted">Статус:</span><br> {{ product.status ? 'Включен' : 'Выключен' }}
+                                </li>
+                                <li class="list-group-item small">
                                     <span class="text-muted">Цена:</span><br> {{ product.price }}
                                 </li>
                                 <li class="list-group-item small">

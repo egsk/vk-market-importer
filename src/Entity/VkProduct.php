@@ -91,6 +91,11 @@ class VkProduct
      */
     private $photoId;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $status;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -259,6 +264,18 @@ class VkProduct
 
     public function setDataSource(?DataSourceInterface $dataSource)
     {
+        return $this;
+    }
+
+    public function getStatus(): ?bool
+    {
+        return $this->status;
+    }
+
+    public function setStatus(bool $status): self
+    {
+        $this->status = $status;
+
         return $this;
     }
 }

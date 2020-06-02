@@ -39,7 +39,7 @@ class ImageHandler
     {
         try {
             if ($this->filePath) {
-//                unlink($this->filePath);
+                unlink($this->filePath);
             }
         } catch (\Exception $e) {
         }

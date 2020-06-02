@@ -51,11 +51,17 @@ class ProductUploader
      */
     protected $albums;
 
-    public function __construct(string $defaultPhotoUrl)
+    /**
+     * @var ImageHandler
+     */
+    protected $imageHandler;
+
+    public function __construct(string $defaultPhotoUrl, ImageHandler $imageHandler)
     {
         $this->defaultPhotoUrl = $defaultPhotoUrl;
         $this->vkApiClient = new VKApiClient();
         $this->httpClient = new Client();
+        $this->imageHandler = $imageHandler;
     }
 
     /**
@@ -245,12 +251,18 @@ class ProductUploader
             $photoUrl = $this->defaultPhotoUrl;
         }
         try {
-            $image = fopen($photoUrl, 'r');
+            $path = $this->imageHandler->prepareImage($photoUrl);
+        } catch (\Exception $e) {
+            $path = $this->defaultPhotoUrl;
+        }
+        try {
+            $image = fopen($path, 'r');
             $photo = $this->uploadImage($image);
         } catch (\Exception $e) {
             $image = fopen($this->defaultPhotoUrl, 'r');
             $photo = $this->uploadImage($image);
         }
+        $this->imageHandler->clear();
 
         return $photo[0]['id'];
     }

@@ -33,7 +33,8 @@
         "symfony/web-link": "5.0.*",
         "symfony/webpack-encore-bundle": "^1.7",
         "symfony/yaml": "5.0.*",
-        "vkcom/vk-php-sdk": "^5.101"
+        "vkcom/vk-php-sdk": "^5.101",
+      "ext-imagick": "*"
     },
     "require-dev": {
         "symfony/debug-pack": "*",

@@ -35,6 +35,8 @@ services:
     App\Service\Vk\ProductUploader:
         arguments:
             - '%env(VK_DEFAULT_PRODUCT_PICTURE)%'
-
+    App\Service\Vk\ImageHandler:
+        arguments:
+            - '%kernel.project_dir%/var/cache'
     App\Service\Vk\RepresentationProvider\CsvLinkDataSourceRepresentationProvider:
         public: true

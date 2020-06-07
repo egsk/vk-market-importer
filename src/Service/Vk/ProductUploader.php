@@ -120,6 +120,7 @@ class ProductUploader
             try {
                 $product = $this->createProductEntity($representation);
                 $this->uploadProduct($product);
+                $uploadedProducts[] = $product;
             } catch (\Exception $e) {
             }
         }

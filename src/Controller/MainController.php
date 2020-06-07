@@ -304,4 +304,38 @@ class MainController extends AbstractController
 
         return $this->redirectToRoute('home');
     }
+
+
+//    /**
+//     * @Route("/test/{id}")
+//     */
+//    public function test(int $id, EntityManagerInterface $entityManager, DataSourceManager $dataSourceManager, ProductUploader $productUploader)
+//    {
+//        $dataSourceClass = CsvLinkDataSource::class;
+//        /**
+//         * @var DataSourceInterface $dataSource
+//         */
+//        $dataSource = $entityManager
+//            ->getRepository($dataSourceClass)
+//            ->find($id);
+//        $user = $dataSource->getUser();
+//        $products = $dataSource->getVkProducts();
+//        $productRepresentations = $dataSourceManager
+//            ->getProductRepresentationProvider($dataSourceClass)
+//            ->create($dataSource);
+//        $result = $productUploader->upload(
+//            $user->getVkAccessToken(),
+//            $dataSource->getImportTarget()->getGroupId(),
+//            $productRepresentations,
+//            $products->toArray(),
+//            $dataSourceManager->getEntityClass($dataSourceClass)
+//        );
+//        $createdProducts = $result->getCreated();
+//        foreach ($createdProducts as $product) {
+//            $product->setDataSource($dataSource);
+//            $product->setUser($user);
+//            $entityManager->persist($product);
+//        }
+//        $entityManager->flush();
+//    }
 }

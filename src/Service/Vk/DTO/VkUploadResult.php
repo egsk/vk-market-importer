@@ -9,48 +9,48 @@ use App\Entity\VkProduct;
 class VkUploadResult
 {
     /**
-     * @var VkProduct[]
+     * @var VkProduct|null
      */
-    protected $created;
+    protected $vkProduct;
     /**
-     * @var VkProduct[]
+     * @var string
      */
-    protected $updated;
+    protected $status;
 
     /**
-     * @return VkProduct[]
+     * @return VkProduct|null
      */
-    public function getCreated(): array
+    public function getVkProduct(): ?VkProduct
     {
-        return $this->created;
+        return $this->vkProduct;
     }
 
     /**
-     * @param VkProduct[] $created
+     * @param VkProduct|null $vkProduct
      * @return $this
      */
-    public function setCreated(array $created): self
+    public function setVkProduct(?VkProduct $vkProduct): self
     {
-        $this->created = $created;
+        $this->vkProduct = $vkProduct;
 
         return $this;
     }
 
     /**
-     * @return VkProduct[]
+     * @return string
      */
-    public function getUpdated(): array
+    public function getStatus(): string
     {
-        return $this->updated;
+        return $this->status;
     }
 
     /**
-     * @param VkProduct[] $updated
+     * @param string $status
      * @return $this
      */
-    public function setUpdated(array $updated): self
+    public function setStatus(string $status): self
     {
-        $this->updated = $updated;
+        $this->status = $status;
 
         return $this;
     }

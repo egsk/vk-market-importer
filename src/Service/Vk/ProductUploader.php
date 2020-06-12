@@ -4,19 +4,26 @@
 namespace App\Service\Vk;
 
 
+use App\Entity\UploadedProduct;
 use App\Entity\VkProduct;
 use App\Service\Vk\DTO\ProductRepresentation;
 use App\Service\Vk\DTO\VkUploadResult;
-use Doctrine\Common\Collections\Collection;
 use GuzzleHttp\Client;
 use VK\Client\VKApiClient;
 use VK\Exceptions\Api\VKApiAccessMarketException;
 use VK\Exceptions\Api\VKApiMarketAlbumNotFoundException;
+use VK\Exceptions\Api\VKApiMarketGroupingItemsMustHaveDistinctPropertiesException;
+use VK\Exceptions\Api\VKApiMarketGroupingMustContainMoreThanOneItemException;
 use VK\Exceptions\Api\VKApiMarketItemAlreadyAddedException;
 use VK\Exceptions\Api\VKApiMarketItemHasBadLinksException;
 use VK\Exceptions\Api\VKApiMarketItemNotFoundException;
+use VK\Exceptions\Api\VKApiMarketPropertyNotFoundException;
+use VK\Exceptions\Api\VKApiMarketTooManyAlbumsException;
 use VK\Exceptions\Api\VKApiMarketTooManyItemsException;
 use VK\Exceptions\Api\VKApiMarketTooManyItemsInAlbumException;
+use VK\Exceptions\Api\VKApiMarketVariantNotFoundException;
+use VK\Exceptions\Api\VKApiParamHashException;
+use VK\Exceptions\Api\VKApiParamPhotoException;
 use VK\Exceptions\VKApiException;
 use VK\Exceptions\VKClientException;
 
@@ -67,65 +74,79 @@ class ProductUploader
     /**
      * @param string $accessToken
      * @param int $ownerId
-     * @param ProductRepresentation[] $productRepresentations
-     * @param VkProduct[]|Collection $previouslyUploadedProducts
+     * @param ProductRepresentation $productRepresentation
+     * @param VkProduct|null $previouslyUploadedProduct ,
      * @param string $vkProductClass
      * @return VkUploadResult
      */
-    public function upload(
+    public function handleRepresentation
+    (
         string $accessToken,
         int $ownerId,
-        array $productRepresentations,
-        array $previouslyUploadedProducts = [],
+        ProductRepresentation $productRepresentation,
+        ?VkProduct $previouslyUploadedProduct,
         string $vkProductClass = VkProduct::class
-    )
+    ): VkUploadResult
     {
         $result = new VkUploadResult();
         $this->accessToken = $accessToken;
         $this->ownerId = -abs($ownerId);
         $this->vkProductClass = $vkProductClass;
-        $representationsMap = [];
-        $productsMap = [];
-        foreach ($productRepresentations as $representation) {
-            $representationsMap[$representation->getSourceId()] = $representation;
-        }
 
-        foreach ($previouslyUploadedProducts as $product) {
-            $productsMap[$product->getSourceId()] = $product;
+        if (!is_null($previouslyUploadedProduct)) {
+            try {
+                $product = $this->updateProduct($productRepresentation, $previouslyUploadedProduct);
+                $status = $productRepresentation->getStatus() ?
+                    UploadedProduct::STATUS_UPDATED :
+                    UploadedProduct::STATUS_DELETED;
+            } catch (\Exception $exception) {
+                $product = null;
+                $status = $productRepresentation->getStatus() ?
+                    UploadedProduct::STATUS_FAILED_TO_UPDATE :
+                    UploadedProduct::STATUS_FAILED_TO_DELETE;
+            }
+        } else {
+            try {
+                $product = $this->createProduct($productRepresentation);
+                $status = $productRepresentation->getStatus() ?
+                    UploadedProduct::STATUS_CREATED :
+                    UploadedProduct::STATUS_DELETED;
+            } catch (\Exception $exception) {
+                $product = null;
+                $status = $productRepresentation->getStatus() ?
+                    UploadedProduct::STATUS_FAILED_TO_CREATE :
+                    UploadedProduct::STATUS_FAILED_TO_DELETE;
+            }
         }
-        $updatingRepresentation = array_intersect_key($representationsMap, $productsMap);
-        $productsToUpdate = array_intersect_key($productsMap, $updatingRepresentation);
-        if ($productsToUpdate) {
-            $updated = $this->updateProducts($updatingRepresentation, $productsToUpdate);
-            $result->setUpdated($updated);
-        }
-        $creationRepresentations = array_diff_key($representationsMap, $updatingRepresentation);
-        $created = $this->createProducts($creationRepresentations);
-        $result->setCreated($created);
+        $result->setVkProduct($product);
+        $result->setStatus($status);
 
         return $result;
     }
 
     /**
-     * @param ProductRepresentation[]
-     * @return VkProduct[]
+     * @param ProductRepresentation $representation
+     * @return VkProduct|null
+     * @throws VKApiAccessMarketException
+     * @throws VKApiException
+     * @throws VKApiMarketAlbumNotFoundException
+     * @throws VKApiMarketItemAlreadyAddedException
+     * @throws VKApiMarketItemHasBadLinksException
+     * @throws VKApiMarketItemNotFoundException
+     * @throws VKApiMarketTooManyItemsException
+     * @throws VKApiMarketTooManyItemsInAlbumException
+     * @throws VKClientException
      */
-    protected function createProducts(array $representations): array
+    protected function createProduct(ProductRepresentation $representation): ?VkProduct
     {
-        $uploadedProducts = [];
-        foreach ($representations as $representation) {
-            if (!$representation->getStatus()) {
-                continue;
-            }
-            try {
-                $product = $this->createProductEntity($representation);
-                $this->uploadProduct($product);
-                $uploadedProducts[] = $product;
-            } catch (\Exception $e) {
-            }
+        if (!$representation->getStatus()) {
+            return null;
         }
+        $product = $this->createProductEntity($representation);
+        $this->uploadProduct($product);
 
-        return $uploadedProducts;
+
+        return $product;
     }
 
     /**
@@ -175,75 +196,80 @@ class ProductUploader
     }
 
     /**
-     * @param ProductRepresentation[] $updatingRepresentation
-     * @param VkProduct[] $productsToUpdate
-     * @return VkProduct[]
+     * @param ProductRepresentation $representation
+     * @param VkProduct $productToUpdate
+     * @return VkProduct
+     * @throws VKApiAccessMarketException
+     * @throws VKApiException
+     * @throws VKApiMarketAlbumNotFoundException
+     * @throws VKApiMarketItemAlreadyAddedException
+     * @throws VKApiMarketItemHasBadLinksException
+     * @throws VKApiMarketItemNotFoundException
+     * @throws VKApiMarketTooManyItemsException
+     * @throws VKApiMarketTooManyItemsInAlbumException
+     * @throws VKClientException
+     * @throws VKApiMarketGroupingItemsMustHaveDistinctPropertiesException
+     * @throws VKApiMarketGroupingMustContainMoreThanOneItemException
+     * @throws VKApiMarketPropertyNotFoundException
+     * @throws VKApiMarketVariantNotFoundException
      */
-    protected function updateProducts(array $updatingRepresentation, array $productsToUpdate): array
+    protected function updateProduct(ProductRepresentation $representation, VkProduct $productToUpdate): VkProduct
     {
-        $updatedProducts = [];
-        foreach ($updatingRepresentation as $key => $representation) {
-            try {
-                $product = $productsToUpdate[$key];
-                $oldPhotoUrl = $product->getPhotoUrl();
-                $oldAlbumName = $product->getAlbumName();
-                $oldStatus = $product->getStatus();
-                $product = $this->createProductEntity($representation, $productsToUpdate[$key]);
-                $params = [];
-                if (!$product->getStatus() && $oldStatus) {
-                    $this->vkApiClient
-                        ->market()
-                        ->delete($this->accessToken, [
-                            'owner_id' => $this->ownerId,
-                            'item_id' => $product->getVkMarketId()
-                        ]);
-                    $product->setVkMarketId(-1);
-                    sleep(1);
-                    continue;
-                }
-                if ($product->getStatus() && !$oldStatus) {
-                    $this->uploadProduct($product);
-                    continue;
-                }
-                if ($product->getPhotoUrl() !== $oldPhotoUrl) {
-                    $params['main_photo_id'] = $this->createPhoto($product->getPhotoUrl());
-                }
-                if ($product->getAlbumName() && $product->getAlbumName() !== $oldAlbumName) {
-                    $this->createAlbumIfNotExists($product->getAlbumName());
-                    $this->vkApiClient
-                        ->market()
-                        ->removeFromAlbum($this->accessToken, [
-                            'owner_id' => $this->ownerId,
-                            'item_id' => $product->getVkMarketId(),
-                            'album_ids' => $this->getAlbums()[$oldAlbumName]
-                        ]);
-                    $this->vkApiClient
-                        ->market()
-                        ->addToAlbum($this->accessToken, [
-                            'owner_id' => $this->ownerId,
-                            'item_id' => $product->getVkMarketId(),
-                            'album_ids' => $this->getAlbums()[$product->getAlbumName()]
-                        ]);
-                }
-                $this->vkApiClient
-                    ->market()
-                    ->edit($this->accessToken, array_merge([
-                        'owner_id' => $this->ownerId,
-                        'item_id' => $product->getVkMarketId(),
-                        'name' => $product->getName(),
-                        'description' => $product->getDescription(),
-                        'categoryId' => $product->getCategoryId(),
-                        'price' => $product->getPrice(),
-                    ], $params));
-                sleep(1);
+        $oldPhotoUrl = $productToUpdate->getPhotoUrl();
+        $oldAlbumName = $productToUpdate->getAlbumName();
+        $oldStatus = $productToUpdate->getStatus();
+        $productToUpdate = $this->createProductEntity($representation, $productToUpdate);
+        $params = [];
+        if (!$productToUpdate->getStatus() && $oldStatus) {
+            $this->vkApiClient
+                ->market()
+                ->delete($this->accessToken, [
+                    'owner_id' => $this->ownerId,
+                    'item_id' => $productToUpdate->getVkMarketId()
+                ]);
+            $productToUpdate->setVkMarketId(-1);
+            sleep(1);
 
-                $updatedProducts[] = $product;
-            } catch (\Exception $e) {
-            }
-
+            return $productToUpdate;
         }
+        if ($productToUpdate->getStatus() && !$oldStatus) {
+            $this->uploadProduct($productToUpdate);
 
-        return $updatedProducts;
+            return $productToUpdate;
+        }
+        if ($productToUpdate->getPhotoUrl() !== $oldPhotoUrl) {
+            $params['main_photo_id'] = $this->createPhoto($productToUpdate->getPhotoUrl());
+        }
+        if ($productToUpdate->getAlbumName() && $productToUpdate->getAlbumName() !== $oldAlbumName) {
+            $this->createAlbumIfNotExists($productToUpdate->getAlbumName());
+            $this->vkApiClient
+                ->market()
+                ->removeFromAlbum($this->accessToken, [
+                    'owner_id' => $this->ownerId,
+                    'item_id' => $productToUpdate->getVkMarketId(),
+                    'album_ids' => $this->getAlbums()[$oldAlbumName]
+                ]);
+            $this->vkApiClient
+                ->market()
+                ->addToAlbum($this->accessToken, [
+                    'owner_id' => $this->ownerId,
+                    'item_id' => $productToUpdate->getVkMarketId(),
+                    'album_ids' => $this->getAlbums()[$productToUpdate->getAlbumName()]
+                ]);
+        }
+        $this->vkApiClient
+            ->market()
+            ->edit($this->accessToken, array_merge([
+                'owner_id' => $this->ownerId,
+                'item_id' => $productToUpdate->getVkMarketId(),
+                'name' => $productToUpdate->getName(),
+                'description' => $productToUpdate->getDescription(),
+                'categoryId' => $productToUpdate->getCategoryId(),
+                'price' => $productToUpdate->getPrice(),
+            ], $params));
+        sleep(1);
+
+        return $productToUpdate;
     }
 
     protected function createPhoto($photoUrl = null): int
@@ -268,6 +294,14 @@ class ProductUploader
         return $photo[0]['id'];
     }
 
+    /**
+     * @param $image
+     * @return mixed
+     * @throws VKApiException
+     * @throws VKClientException
+     * @throws VKApiParamHashException
+     * @throws VKApiParamPhotoException
+     */
     protected function uploadImage($image)
     {
         $uploadServer = $this->vkApiClient
@@ -320,6 +354,11 @@ class ProductUploader
         return $vkProduct;
     }
 
+    /**
+     * @return array
+     * @throws VKApiException
+     * @throws VKClientException
+     */
     protected function getAlbums()
     {
         if (!$this->albums) {
@@ -329,6 +368,12 @@ class ProductUploader
         return $this->albums;
     }
 
+    /**
+     * @param string $name
+     * @throws VKApiException
+     * @throws VKClientException
+     * @throws VKApiMarketTooManyAlbumsException
+     */
     protected function createAlbumIfNotExists(string $name)
     {
         if (array_key_exists($name, $this->getAlbums())) {
@@ -343,6 +388,11 @@ class ProductUploader
         $this->albums[$name] = $album['market_album_id'];
     }
 
+    /**
+     * @return array
+     * @throws VKApiException
+     * @throws VKClientException
+     */
     protected function loadAlbums(): array
     {
         $offset = 0;

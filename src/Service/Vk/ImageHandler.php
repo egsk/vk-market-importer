@@ -10,12 +10,15 @@ class ImageHandler
     protected const REQUIRED_HEIGHT = 400;
     protected const BORDER_COLOR = '#f7f9fa';
 
-    protected $cachePath;
+    protected $path;
     protected $filePath;
 
-    public function __construct(string $cachePath)
+    public function __construct(string $path)
     {
-        $this->cachePath = $cachePath;
+        $this->path = $path;
+        if (!is_dir($path)) {
+            mkdir($path, 0777, true);
+        }
     }
 
     public function prepareImage(string $path)
@@ -29,7 +32,7 @@ class ImageHandler
             $image->borderImage(new \ImagickPixel(self::BORDER_COLOR), $borderWidth, $borderHeight);
         }
         $fileName = md5($image) . '_' . time() . '.jpeg';
-        $this->filePath = $this->cachePath . '/' . $fileName;
+        $this->filePath = $this->path . '/' . $fileName;
         $image->writeImage($this->filePath);
 
         return $this->filePath;

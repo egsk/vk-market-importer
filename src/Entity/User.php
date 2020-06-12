@@ -61,11 +61,17 @@ class User implements UserInterface
      */
     private $vkProducts;
 
+    /**
+     * @ORM\OneToMany(targetEntity=UploadTask::class, mappedBy="user", orphanRemoval=true)
+     */
+    private $uploadTasks;
+
     public function __construct()
     {
         $this->importTargets = new ArrayCollection();
         $this->csvLinkDataSources = new ArrayCollection();
         $this->vkProducts = new ArrayCollection();
+        $this->uploadTasks = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -252,6 +258,37 @@ class User implements UserInterface
             // set the owning side to null (unless already changed)
             if ($vkProduct->getUser() === $this) {
                 $vkProduct->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|UploadTask[]
+     */
+    public function getUploadTasks(): Collection
+    {
+        return $this->uploadTasks;
+    }
+
+    public function addUploadTask(UploadTask $uploadTask): self
+    {
+        if (!$this->uploadTasks->contains($uploadTask)) {
+            $this->uploadTasks[] = $uploadTask;
+            $uploadTask->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUploadTask(UploadTask $uploadTask): self
+    {
+        if ($this->uploadTasks->contains($uploadTask)) {
+            $this->uploadTasks->removeElement($uploadTask);
+            // set the owning side to null (unless already changed)
+            if ($uploadTask->getUser() === $this) {
+                $uploadTask->setUser(null);
             }
         }
 

@@ -37,6 +37,9 @@ services:
             - '%env(VK_DEFAULT_PRODUCT_PICTURE)%'
     App\Service\Vk\ImageHandler:
         arguments:
-            - '%kernel.project_dir%/var/cache'
+            - '%kernel.project_dir%/var/temp_img'
+    App\Service\Vk\CsvDataSourceMessageHandler:
+        arguments:
+            - '%kernel.project_dir%/var/temp_csv'
     App\Service\Vk\RepresentationProvider\CsvLinkDataSourceRepresentationProvider:
         public: true

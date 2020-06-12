@@ -5,11 +5,18 @@ namespace App\Controller;
 
 
 use App\Entity\ImportTarget;
+use App\Repository\UploadTaskRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
 
 /**
  * Class ApiController
@@ -33,5 +40,31 @@ class ApiController extends AbstractController
         $entityManager->flush();
 
         return new JsonResponse(['success' => true]);
+    }
+
+    /**
+     * @Route("/upload_task/{id}", methods={"GET"})
+     */
+    public function getUploadTaskStatus(int $id, UploadTaskRepository $repository)
+    {
+        $task = $repository
+            ->createQueryBuilder('ut')
+            ->leftJoin('ut.uploadedProducts', 'up')
+            ->where('ut.id = :id')
+            ->setParameter(':id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+        if (is_null($task)) {
+            throw new NotFoundHttpException();
+        }
+        $serializer = new Serializer([new DateTimeNormalizer(), new ObjectNormalizer()], [new JsonEncoder()]);
+
+        return new JsonResponse(
+            $serializer
+                ->serialize($task, 'json', [AbstractNormalizer::IGNORED_ATTRIBUTES => ['user', 'uploadTask']]),
+            200,
+            [],
+            true
+        );
     }
 }

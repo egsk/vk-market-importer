@@ -4,15 +4,22 @@
 namespace App\Message;
 
 
+use App\Entity\UploadTask;
 use App\Service\Vk\DataSource\DataSourceInterface;
 
 class UpdateDataSource
 {
-    public function __construct(DataSourceInterface $dataSource)
+    public function __construct(DataSourceInterface $dataSource, UploadTask $uploadTask)
     {
         $this->dataSourceId = $dataSource->getId();
+        $this->uploadTaskId = $uploadTask->getId();
         $this->dataSourceClass = get_class($dataSource);
     }
+
+    /**
+     * @var int
+     */
+    protected $uploadTaskId;
 
     /**
      * @var int
@@ -37,6 +44,14 @@ class UpdateDataSource
     public function getDataSourceClass(): string
     {
         return $this->dataSourceClass;
+    }
+
+    /**
+     * @return int
+     */
+    public function getUploadTaskId(): int
+    {
+        return $this->uploadTaskId;
     }
 
 }

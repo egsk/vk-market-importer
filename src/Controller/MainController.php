@@ -6,12 +6,14 @@ namespace App\Controller;
 
 use App\Entity\CsvLinkDataSource;
 use App\Entity\ImportTarget;
+use App\Entity\UploadTask;
 use App\Entity\User;
 use App\Entity\VkMarketCategory;
 use App\Form\CsvLinkDataSourceType;
 use App\Form\ImportTargetType;
 use App\Message\UpdateDataSource;
 use App\Repository\ImportTargetRepository;
+use App\Service\Vk\CsvDataSourceMessageHandler;
 use App\Service\Vk\DataSource\DataSourceInterface;
 use App\Service\Vk\ProductRepresentation\DataSourceManager;
 use App\Service\Vk\ProductUploader;
@@ -264,10 +266,14 @@ class MainController extends AbstractController
      * @param CsvLinkDataSource $dataSource
      * @return RedirectResponse
      */
-    public function uploadProductsFromCsvLinkDataSource(CsvLinkDataSource $dataSource)
+    public function uploadProductsFromCsvLinkDataSource(CsvLinkDataSource $dataSource, EntityManagerInterface $entityManager)
     {
-        $this->dispatchMessage(new UpdateDataSource($dataSource));
-        $this->addFlash('success', 'Начата загрузка товаров в фоновом режиме');
+        $uploadTask = new UploadTask();
+        $uploadTask->setStatus(UploadTask::STATUS_NEW);
+        $uploadTask->setUser($this->getUser());
+        $entityManager->persist($uploadTask);
+        $entityManager->flush();
+        $this->dispatchMessage(new UpdateDataSource($dataSource, $uploadTask));
 
         return $this->redirectToRoute('home');
     }
@@ -309,33 +315,31 @@ class MainController extends AbstractController
 //    /**
 //     * @Route("/test/{id}")
 //     */
-//    public function test(int $id, EntityManagerInterface $entityManager, DataSourceManager $dataSourceManager, ProductUploader $productUploader)
+//    public function test(int $id, EntityManagerInterface $entityManager, CsvDataSourceMessageHandler $csvDataSourceMessageHandler)
 //    {
 //        $dataSourceClass = CsvLinkDataSource::class;
 //        /**
-//         * @var DataSourceInterface $dataSource
+//         * @var CsvLinkDataSource $dataSource
 //         */
 //        $dataSource = $entityManager
 //            ->getRepository($dataSourceClass)
 //            ->find($id);
-//        $user = $dataSource->getUser();
-//        $products = $dataSource->getVkProducts();
-//        $productRepresentations = $dataSourceManager
-//            ->getProductRepresentationProvider($dataSourceClass)
-//            ->create($dataSource);
-//        $result = $productUploader->upload(
-//            $user->getVkAccessToken(),
-//            $dataSource->getImportTarget()->getGroupId(),
-//            $productRepresentations,
-//            $products->toArray(),
-//            $dataSourceManager->getEntityClass($dataSourceClass)
-//        );
-//        $createdProducts = $result->getCreated();
-//        foreach ($createdProducts as $product) {
-//            $product->setDataSource($dataSource);
-//            $product->setUser($user);
-//            $entityManager->persist($product);
+//        /**
+//         * @var UploadTask $uploadTask
+//         */
+//        $uploadTask = $entityManager
+//            ->getRepository(UploadTask::class)
+//            ->find(2);
+//        $uploadTask->setStatus(UploadTask::STATUS_IN_PROGRESS);
+//        $entityManager->flush();
+//        switch ($dataSourceClass) {
+//            case CsvLinkDataSource::class:
+//            default:
+//                $csvDataSourceMessageHandler
+//                    ->handle($dataSource, $uploadTask);
 //        }
+//        $uploadTask->setStatus(UploadTask::STATUS_FINISHED);
+//        $uploadTask->setCompletedAt(new \DateTime());
 //        $entityManager->flush();
 //    }
 }

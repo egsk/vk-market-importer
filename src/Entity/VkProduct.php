@@ -36,7 +36,7 @@ class VkProduct
     protected $sourceId;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=100)
      */
     protected $name;
 
@@ -51,7 +51,7 @@ class VkProduct
     protected $price;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     protected $photoUrl;
 
@@ -87,7 +87,7 @@ class VkProduct
     private $categoryId;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", nullable=true)
      */
     private $photoId;
 

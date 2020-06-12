@@ -46,7 +46,7 @@ class CsvLinkDataSourceRepresentationProvider implements ProductRepresentationPr
                 $name = $matches[0][0];
             }
         }
-        $representation->setName($name);
+        $representation->setName(substr($name, 0, 99));
         $description = $dataSource->getDescriptionPattern() ?
             str_replace($keys, array_values($row), $dataSource->getDescriptionPattern()) :
             '';
@@ -72,8 +72,11 @@ class CsvLinkDataSourceRepresentationProvider implements ProductRepresentationPr
                 ->setCategoryName($vkMarketCategory->getName())
                 ->setCategoryId($vkMarketCategory->getId());
         }
-        $price = (str_replace(',', '.', $row[$dataSource->getPrice()]));
-        $representation->setPrice(round($price));
+        $price = (float)(str_replace(',', '.', $row[$dataSource->getPrice()]));
+        if ($price <= 0.01) {
+            $price = 0.01;
+        }
+        $representation->setPrice($price);
         $representation->setPhotoUrl($row[$dataSource->getPhotoUrl()]);
         $albumName = $row[$dataSource->getAlbumName()] ?? null;
         if ($albumHandlePattern = $dataSource->getAlbumHandlePattern()) {

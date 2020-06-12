@@ -9,6 +9,7 @@ use App\Entity\VkProduct;
 use App\Service\Vk\DTO\ProductRepresentation;
 use App\Service\Vk\DTO\VkUploadResult;
 use GuzzleHttp\Client;
+use Psr\Log\LoggerInterface;
 use VK\Client\VKApiClient;
 use VK\Exceptions\Api\VKApiAccessMarketException;
 use VK\Exceptions\Api\VKApiMarketAlbumNotFoundException;
@@ -63,12 +64,15 @@ class ProductUploader
      */
     protected $imageHandler;
 
-    public function __construct(string $defaultPhotoUrl, ImageHandler $imageHandler)
+    protected $logger;
+
+    public function __construct(string $defaultPhotoUrl, ImageHandler $imageHandler, LoggerInterface $logger)
     {
         $this->defaultPhotoUrl = $defaultPhotoUrl;
         $this->vkApiClient = new VKApiClient();
         $this->httpClient = new Client();
         $this->imageHandler = $imageHandler;
+        $this->logger = $logger;
     }
 
     /**
@@ -100,6 +104,7 @@ class ProductUploader
                     UploadedProduct::STATUS_UPDATED :
                     UploadedProduct::STATUS_DELETED;
             } catch (\Exception $exception) {
+                $this->logger->critical('UPLOADING ERROR: ' . $exception->getMessage() . "\n" . $exception->getTraceAsString());
                 $product = null;
                 $status = $productRepresentation->getStatus() ?
                     UploadedProduct::STATUS_FAILED_TO_UPDATE :
@@ -112,6 +117,7 @@ class ProductUploader
                     UploadedProduct::STATUS_CREATED :
                     UploadedProduct::STATUS_DELETED;
             } catch (\Exception $exception) {
+                $this->logger->critical('UPLOADING ERROR: ' . $exception->getMessage() . "\n" . $exception->getTraceAsString());
                 $product = null;
                 $status = $productRepresentation->getStatus() ?
                     UploadedProduct::STATUS_FAILED_TO_CREATE :
@@ -140,9 +146,12 @@ class ProductUploader
     protected function createProduct(ProductRepresentation $representation): VkProduct
     {
         $product = $this->createProductEntity($representation);
-        if ($representation->getStatus()) {
-            $this->uploadProduct($product);
+        if (!$representation->getStatus()) {
+            $product->setVkMarketId(0);
+
+            return $product;
         }
+        $this->uploadProduct($product);
 
         return $product;
     }

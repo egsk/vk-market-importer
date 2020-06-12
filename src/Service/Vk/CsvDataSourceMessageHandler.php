@@ -109,7 +109,7 @@ class CsvDataSourceMessageHandler
             $uploadedProduct->setName($representation->getName());
             $uploadedProduct->setStatus($result->getStatus());
             $uploadedProduct->setSourceId($representation->getSourceId());
-            if ($isNew) {
+            if ($isNew && !is_null($product)) {
                 $product->setUser($user);
                 $product->setDataSource($this->dataSource);
                 $this->entityManager->persist($product);

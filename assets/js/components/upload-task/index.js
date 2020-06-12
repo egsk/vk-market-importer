@@ -25,7 +25,7 @@ import uploadTaskController from "../../controllers/uploadTaskController";
             uploadTaskController.getUploadTask(id).then((res) => {
                 handleUploadTask(res.data);
             })
-        }, 2000);
+        }, 4000);
 
     function handleUploadTask(uploadTask) {
         switch (uploadTask.status) {

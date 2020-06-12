@@ -14,7 +14,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 class UploadTask
 {
     public const STATUS_NEW = 'new';
-    public const STATUS_IN_PROGRESS = 'in_progress';
+    public const STATUS_IN_PROCESS = 'in_process';
     public const STATUS_FINISHED = 'finished';
 
     /**

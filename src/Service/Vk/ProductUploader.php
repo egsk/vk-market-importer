@@ -126,7 +126,7 @@ class ProductUploader
 
     /**
      * @param ProductRepresentation $representation
-     * @return VkProduct|null
+     * @return VkProduct
      * @throws VKApiAccessMarketException
      * @throws VKApiException
      * @throws VKApiMarketAlbumNotFoundException
@@ -137,14 +137,12 @@ class ProductUploader
      * @throws VKApiMarketTooManyItemsInAlbumException
      * @throws VKClientException
      */
-    protected function createProduct(ProductRepresentation $representation): ?VkProduct
+    protected function createProduct(ProductRepresentation $representation): VkProduct
     {
-        if (!$representation->getStatus()) {
-            return null;
-        }
         $product = $this->createProductEntity($representation);
-        $this->uploadProduct($product);
-
+        if ($representation->getStatus()) {
+            $this->uploadProduct($product);
+        }
 
         return $product;
     }

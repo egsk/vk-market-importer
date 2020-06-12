@@ -219,7 +219,6 @@ class MainController extends AbstractController
                 <br>
                 Когда-нибудь я сделаю подробный отчёт об ошибке, обещаю.
             ');
-
             return $this->redirectToRoute('home');
         }
         if (count($productRepresentations) === 0) {

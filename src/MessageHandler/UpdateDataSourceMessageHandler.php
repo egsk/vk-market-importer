@@ -8,8 +8,6 @@ use App\Entity\CsvLinkDataSource;
 use App\Entity\UploadTask;
 use App\Message\UpdateDataSource;
 use App\Service\Vk\CsvDataSourceMessageHandler;
-use App\Service\Vk\ProductRepresentation\DataSourceManager;
-use App\Service\Vk\ProductUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
@@ -42,7 +40,7 @@ class UpdateDataSourceMessageHandler implements MessageHandlerInterface
         $uploadTask = $this->entityManager
             ->getRepository(UploadTask::class)
             ->find($message->getUploadTaskId());
-        $uploadTask->setStatus(UploadTask::STATUS_IN_PROGRESS);
+        $uploadTask->setStatus(UploadTask::STATUS_IN_PROCESS);
         $this->entityManager->flush();
         switch ($dataSourceClass) {
             case CsvLinkDataSource::class:

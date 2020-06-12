@@ -10,7 +10,7 @@ import uploadTaskController from "../../controllers/uploadTaskController";
         'deleted': 'Удалён',
         'failed_to_delete': 'Не удалось удалить'
     }
-    if (!root) {
+    if (!root.length) {
         return;
     }
     const id = root.data('id');
@@ -25,14 +25,14 @@ import uploadTaskController from "../../controllers/uploadTaskController";
             uploadTaskController.getUploadTask(id).then((res) => {
                 handleUploadTask(res.data);
             })
-        }, 1000);
+        }, 2000);
 
     function handleUploadTask(uploadTask) {
         switch (uploadTask.status) {
             case 'finished':
                 handleFinishedTask(uploadTask)
                 break;
-            case 'in_progress':
+            case 'in_process':
                 handleTaskInProgress(uploadTask)
                 break;
             case 'new':
@@ -56,7 +56,7 @@ import uploadTaskController from "../../controllers/uploadTaskController";
 
     function renderUploadedProducts(uploadedProducts) {
         listHolder.empty();
-        uploadedProducts.forEach(el => {
+        uploadedProducts.reverse().forEach(el => {
             console.log(el);
             const text = `Имя: ${el.name}; Id в источнике: ${el.sourceId}; Статус: ${statusDictionary[el.status]}`
             const item = $('<li>', {class: 'list-group-item', text})

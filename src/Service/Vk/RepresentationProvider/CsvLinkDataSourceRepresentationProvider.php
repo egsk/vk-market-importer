@@ -72,7 +72,8 @@ class CsvLinkDataSourceRepresentationProvider implements ProductRepresentationPr
                 ->setCategoryName($vkMarketCategory->getName())
                 ->setCategoryId($vkMarketCategory->getId());
         }
-        $representation->setPrice($row[$dataSource->getPrice()]);
+        $price = (str_replace(',', '.', $row[$dataSource->getPrice()]));
+        $representation->setPrice(round($price));
         $representation->setPhotoUrl($row[$dataSource->getPhotoUrl()]);
         $albumName = $row[$dataSource->getAlbumName()] ?? null;
         if ($albumHandlePattern = $dataSource->getAlbumHandlePattern()) {

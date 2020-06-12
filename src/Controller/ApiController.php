@@ -43,7 +43,7 @@ class ApiController extends AbstractController
     }
 
     /**
-     * @Route("/upload_task/{id}", methods={"GET"})
+     * @Route("/upload-task/{id}", methods={"GET"})
      */
     public function getUploadTaskStatus(int $id, UploadTaskRepository $repository)
     {

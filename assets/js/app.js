@@ -15,3 +15,4 @@ import 'bootstrap-select'
 
 import './components/flash'
 import './components/home'
+import './components/upload-task'

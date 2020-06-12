@@ -211,7 +211,7 @@ class MainController extends AbstractController
             throw new AccessDeniedHttpException();
         }
         try {
-            $productRepresentations = $representationFactory->create($dataSource);
+            $productRepresentations = $representationFactory->createBatch($dataSource);
         } catch (Exception $e) {
             $this->addFlash('warning', 'Ошибка при попытке загрузки товаров из csv.
                 <br>
@@ -275,7 +275,7 @@ class MainController extends AbstractController
         $entityManager->flush();
         $this->dispatchMessage(new UpdateDataSource($dataSource, $uploadTask));
 
-        return $this->redirectToRoute('home');
+        return $this->redirectToRoute('upload_task', ['id' => $uploadTask->getId()]);
     }
 
 
@@ -311,12 +311,23 @@ class MainController extends AbstractController
         return $this->redirectToRoute('home');
     }
 
+    /**
+     * @Route("/upload-task/{id}", name="upload_task")
+     * @param int $id
+     * @return Response
+     */
+    public function watchUploadProgress(int $id)
+    {
+        return $this->render('upload-process.twig', ['id' => $id]);
+    }
+
 
 //    /**
 //     * @Route("/test/{id}")
 //     */
-//    public function test(int $id, EntityManagerInterface $entityManager, CsvDataSourceMessageHandler $csvDataSourceMessageHandler)
+//    public function test()
 //    {
+//
 //        $dataSourceClass = CsvLinkDataSource::class;
 //        /**
 //         * @var CsvLinkDataSource $dataSource

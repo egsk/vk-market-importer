@@ -46,7 +46,7 @@ class CsvLinkDataSourceRepresentationProvider implements ProductRepresentationPr
                 $name = $matches[0][0];
             }
         }
-        $representation->setName(substr($name, 0, 99));
+        $representation->setName(substr($name, 0, 120));
         $description = $dataSource->getDescriptionPattern() ?
             str_replace($keys, array_values($row), $dataSource->getDescriptionPattern()) :
             '';
